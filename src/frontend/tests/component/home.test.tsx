@@ -3,14 +3,18 @@ import { describe, expect, it } from "vitest";
 import HomePage from "@/app/page";
 
 describe("HomePage", () => {
-  it("présente Abricot et son état initial", () => {
+  it("présente la marque et annonce honnêtement la disponibilité", () => {
     render(<HomePage />);
 
+    expect(screen.getByRole("img", { name: "Abricot" })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 1, name: "Abricot" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Vos projets, en toute clarté.",
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Votre espace de gestion de projets arrive bientôt/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Disponible prochainement" }),
+    ).toBeDisabled();
   });
 });

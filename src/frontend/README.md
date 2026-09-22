@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Ouvrir <http://localhost:3000>. La page d'accueil initiale ne requiert pas le backend. `BACKEND_URL` servira au BFF lorsqu'il sera implémenté ; ne pas préfixer cette variable par `NEXT_PUBLIC_`.
+Ouvrir <http://localhost:3000>. La page de présentation des fondations visuelles ne requiert pas le backend ; son bouton reste désactivé tant qu'aucune fonctionnalité métier n'est disponible. `BACKEND_URL` servira au BFF lorsqu'il sera implémenté ; ne pas préfixer cette variable par `NEXT_PUBLIC_`.
 
 ## Vérifications
 
@@ -34,6 +34,7 @@ Le formatage est assuré par `npm run format` (Prettier et tri des classes Tailw
 
 - `src/app` : routes et layout Next.js ;
 - `src/modules` : fonctionnalités métier à ajouter au fil des tickets ;
-- `src/components` : composants réutilisables à ajouter au besoin ;
+- `src/components/ui` : première primitive shadcn/ui adaptée à Abricot (bouton) ;
 - `src/lib` : utilitaires transversaux ;
+- `public` : logos officiels SVG clair et blanc issus des maquettes ;
 - `tests/unit`, `tests/component`, `tests/e2e` : tests séparés du code applicatif.

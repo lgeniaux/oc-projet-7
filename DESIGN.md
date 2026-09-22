@@ -4,32 +4,53 @@ name: Abricot
 description: Identité visuelle de l'application de gestion collaborative de projets.
 colors:
   primary: "#D3590B"
+  link: "#AD4706"
   background: "#F9FAFB"
   surface: "#FFFFFF"
   text: "#1F1F1F"
   muted: "#6B7280"
   border: "#E5E7EB"
   action: "#1F1F1F"
+  action-hover: "#0F0F0F"
   on-action: "#FFFFFF"
 typography:
-  placeholder-heading:
+  heading-lg:
     fontFamily: Manrope
     fontSize: 36px
     fontWeight: 600
     lineHeight: 1.2
-  placeholder-body:
+  heading-md:
+    fontFamily: Manrope
+    fontSize: 20px
+    fontWeight: 600
+    lineHeight: 1.4
+  body-md:
     fontFamily: Inter
-    fontSize: 18px
+    fontSize: 16px
     fontWeight: 400
     lineHeight: 1.5
 spacing:
-  placeholder-gutter: 24px
-  placeholder-gap: 16px
-omitted:
-  - section: rounded
-    reason: Rayons non encore vérifiés dans les maquettes.
-  - section: components
-    reason: Aucun composant métier implémenté ; valeurs détaillées à vérifier avant intégration.
+  xs: 8px
+  sm: 16px
+  md: 24px
+  lg: 32px
+  xl: 48px
+rounded:
+  sm: 8px
+  md: 10px
+  full: 9999px
+components:
+  button-primary:
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.on-action}"
+    rounded: "{rounded.md}"
+    height: 48px
+  button-primary-hover:
+    backgroundColor: "{colors.action-hover}"
+  card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.md}"
 ---
 
 # Abricot Design System
@@ -38,27 +59,28 @@ omitted:
 
 Abricot est un outil de gestion collaborative de projets destiné principalement aux freelances. L'interface des maquettes est sobre, claire et aérée : fonds très clairs, surfaces blanches, texte sombre, orange pour l'identité et certains repères, actions principales sombres. La cible est une fidélité forte, sans pixel-perfect. L'accessibilité WCAG 2.1 AA et le responsive priment sur les détails décoratifs.
 
-Les couleurs ci-dessus ont été relevées sur les aplats des maquettes `sujet/maquette/Dashboard.png` et `sujet/maquette/Projets.png` (pixels RGB). Les dimensions des tokens `placeholder-*` décrivent **uniquement la page d'accueil provisoire** de `src/frontend`, pas les tailles typographiques ni l'espacement définitifs des vues métier. Les familles Inter et Manrope sont, elles, confirmées pour le produit. Les autres tokens sont des références visuelles à intégrer progressivement ; le CSS de la page provisoire ne reflète pas encore l'ensemble du système.
+Sources : `sujet/maquette/Dashboard.png`, `Dashboard vue Kanban.png`, `Projets.png`, `Single projet.png`, `Log In.png` et `Modale création projet.png` (PNG desktop 1440 px et SVG du logo). Les aplats de couleurs sont relevés par échantillonnage RGB ; les espacements, rayons et tailles sont regroupés à partir de leurs dimensions visibles et ajustés à une échelle simple, sans viser le pixel-perfect. Inter et Manrope sont confirmées par le porteur du projet. Les tailles d'écrans métier restent indicatives ; le thème Tailwind utilise les tokens ci-dessous, et les pages futures les adapteront selon leurs besoins.
 
 Référence de format : [spécification Google DESIGN.md (alpha)](https://github.com/google-labs-code/design.md/blob/main/docs/spec.md). Vérifier le document avec `cd src/frontend && npm run design:lint`.
 
 ## Colors
 
-- **Primary (`#D3590B`)** : orange de la marque, du logo et de repères tels que la navigation inactive ou les liens ; ne pas l'employer automatiquement comme fond de bouton.
+- **Primary (`#D3590B`)** : orange de la marque et du logo (`Logo.svg`, attribut `fill`), employé pour les pictogrammes et accents. À 4,04:1 sur blanc, il **ne convient pas aux petits textes**.
+- **Link (`#AD4706`)** : adaptation plus sombre de l'orange de marque pour les textes sur fond clair (5,71:1 sur blanc, 5,46:1 sur le fond de page). Ce ton est un choix d'accessibilité, non un prélèvement de la maquette.
 - **Background (`#F9FAFB`)** : fond des vues et du panneau de connexion.
 - **Surface (`#FFFFFF`)** : cartes, modales, en-tête et champs.
-- **Text / action (`#1F1F1F`)** : texte principal et fond des actions principales ; `on-action` blanc.
+- **Text / action (`#1F1F1F`)** : texte principal et fond des actions principales ; `on-action` blanc (16,48:1). `Action-hover` (`#0F0F0F`) est prélevé sur la navigation active.
 - **Muted (`#6B7280`)** : descriptions et métadonnées ; **border (`#E5E7EB`)** : contours discrets.
 
-Les couleurs de statut ne sont pas encore normalisées. Ne jamais porter une information uniquement par la couleur ; tester les contrastes réels de chaque paire texte/fond avant intégration.
+Le gris `muted` sur blanc atteint 4,83:1 et sur `background` 4,63:1. Ces ratios ont été calculés selon la formule WCAG pour du texte normal (seuil AA 4,5:1). Les couleurs de statut ne sont pas encore normalisées ; un statut doit toujours être accompagné de texte. Tester les contrastes des nouveaux couples texte/fond lors de leur ajout.
 
 ## Typography
 
-**Manrope** est la police des titres et **Inter** celle du corps de texte (information confirmée par le porteur du projet). Le frontend les charge localement via `@fontsource`, sans requête vers un service de polices au chargement de la page. Les tailles et graisses des tokens `placeholder-*` décrivent uniquement la page d'accueil provisoire (titre de 36 px / 600, texte de 18 px / 400) ; les échelles typographiques des écrans métier restent à relever dans les maquettes. Conserver une hiérarchie de titres logique et une interligne lisible.
+**Manrope** est la police des titres et **Inter** celle du corps de texte (information confirmée par le porteur du projet). Le frontend charge localement les variantes latines Manrope 600, Inter 400 et 500 via `@fontsource`. Les vues desktop suggèrent des titres de page autour de 24 px, des titres de carte autour de 20 px et du texte courant autour de 16 px. `heading-lg` (36 px) sert au titre de la page d'accueil de présentation, pas aux titres de page des vues métier. Préserver des titres sémantiques et une interligne lisible ; confirmer les tailles lors de chaque écran.
 
 ## Layout
 
-Les maquettes desktop sont fournies en largeur 1440 px. Le dashboard organise la navigation en haut puis le contenu dans une colonne centrale ; les projets utilisent une grille de trois cartes sur desktop. Les cartes regroupent leurs informations avec des marges généreuses. La page provisoire utilise une gouttière latérale de 24 px et un espacement de 16 px entre ses éléments ; ces valeurs ne définissent pas encore la grille finale.
+Les maquettes desktop sont fournies en largeur 1440 px. Le dashboard a un en-tête d'environ 94 px de haut ; son contenu est centré (environ 100 px de marge de chaque côté). La grille des projets comporte trois colonnes avec des intervalles d'environ 16 px ; le Kanban utilise trois colonnes avec des intervalles d'environ 22 px. Ces mesures servent de repères, pas de contraintes sur petit écran. Les espacements de 8, 16, 24, 32 et 48 px normalisent les écarts observés. La page d'accueil est volontairement plus simple : gouttière de 24 px sur mobile, deux colonnes à partir de la tablette.
 
 Sur tablette et mobile, conserver l'ordre de lecture, replier les colonnes et préserver des contrôles utilisables sans défilement horizontal. Ne pas déduire de seuils de rupture arbitraires des seules maquettes desktop.
 
@@ -68,15 +90,18 @@ La hiérarchie s'appuie d'abord sur le contraste entre le fond clair et les surf
 
 ## Shapes
 
-Les cartes, champs et boutons présentent des coins légèrement arrondis, les avatars et badges sont plus arrondis. Les rayons précis restent à mesurer avant création de tokens `rounded` ; ne pas traiter les formes de la page provisoire comme norme.
+Les cartes, champs et boutons présentent des coins légèrement arrondis (environ 8 à 10 px sur les PNG) : `sm` 8 px et `md` 10 px. Les avatars et badges sont arrondis complètement (`full`). Ces mesures rationalisées doivent rester cohérentes entre composants.
 
 ## Components
 
-Les maquettes montrent des actions principales sombres à texte blanc, des cartes à fond blanc bordées, des champs explicitement étiquetés et des badges de statut. Les composants réels ne sont pas encore implémentés : les dimensions, états interactifs, focus, erreurs et variantes devront être documentés au moment de leur création. Les modales futures doivent gérer le focus, Échap et les annonces accessibles.
+Le bouton shadcn/ui est la première primitive intégrée, avec seulement les variantes `default` (fond sombre, texte blanc) et `outline` (fond blanc bordé). Hauteur minimale de 48 px, rayon de 10 px, focus clavier visible et état désactivé explicite. Ce thème remplace les valeurs neutres par défaut du générateur ; ne pas réimporter son thème générique lors de l'ajout d'autres primitives. `lucide-react` fournit les pictogrammes fonctionnels ; les logos officiels SVG restent des fichiers locaux, avec une alternative textuelle pertinente selon le contexte.
+
+Les cartes présentent un fond blanc et une bordure discrète, sans ombre par défaut. Les champs futurs seront explicitement étiquetés ; documenter leurs états focus, erreur et désactivé lors de leur implémentation. Les modales doivent gérer le focus, Échap et les annonces accessibles.
 
 ## Do's and Don'ts
 
 - Préserver la hiérarchie des maquettes sans compromettre WCAG 2.1 AA ni la lecture sur petit écran.
 - Conserver des libellés et messages en français ; accompagner statuts et erreurs de texte, pas seulement de couleur.
-- Ne pas inventer des tokens ou états de composants non vérifiés dans les maquettes ou le code.
-- Ne pas transformer la page d'accueil temporaire en référence visuelle des fonctionnalités futures.
+- Ne pas employer l'orange brut comme petit texte sur fond clair ; utiliser `link` pour les textes et vérifier chaque contraste.
+- Ne pas imposer les valeurs par défaut de shadcn/ui lorsque les maquettes montrent une autre identité.
+- Ne pas prendre la page d'accueil de présentation pour la structure des futures vues métier.
