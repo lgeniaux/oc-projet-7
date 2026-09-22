@@ -4,7 +4,7 @@ Application SaaS de gestion collaborative de projets et de tâches réalisée da
 
 ## État du projet
 
-Le dépôt est en cours d'initialisation. Il contient le backend officiel sous forme de submodule et accueillera un frontend Next.js en TypeScript.
+Le dépôt contient le backend officiel sous forme de submodule et un socle frontend Next.js en TypeScript. Les fonctionnalités métier sont encore à développer.
 
 ## Clonage
 
@@ -36,14 +36,21 @@ Les comptes de démonstration utilisent le mot de passe `P@ssword123`. Voir `src
 
 ## Frontend
 
-Les instructions seront ajoutées lors de son initialisation.
+```bash
+cd src/frontend
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Ouvrir <http://localhost:3000>. La page initiale fonctionne sans backend. Voir `src/frontend/README.md` pour les commandes de validation et les prérequis Playwright.
 
 ## Documentation de travail
 
 - `AGENTS.md` : règles de contribution des agents ;
 - `CONTEXT.md` : vocabulaire métier ;
 - `docs/ARCHITECTURE.md` : architecture technique ;
-- `DESIGN.md` : règles visuelles ;
+- `DESIGN.md` : tokens YAML et règles visuelles selon le format Google (vérifier avec `cd src/frontend && npm run design:lint`) ;
 - `sujet/` : documents et maquettes fournis.
 
 Cette documentation accompagne le développement dans le dépôt privé.
