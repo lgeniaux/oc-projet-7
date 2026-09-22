@@ -102,7 +102,8 @@ Ne pas imposer de seuil arbitraire de couverture.
 - Les messages suivent Conventional Commits et décrivent uniquement la modification réelle.
 - Les branches et commits ne mentionnent jamais de numéro d'issue.
 - Présenter le diff avant chaque commit.
-- Ne jamais commit, push, ouvrir ou modifier une Pull Request, changer le statut d'une issue ou fusionner sans accord explicite.
+- Gérer les tickets dans le GitHub Project « Projet 7 Abricot » : placer un ticket en `In Progress` au début de son implémentation, puis en `Done` uniquement après la fusion de sa Pull Request. Ne jamais marquer `Done` au seul motif que le code ou les tests sont terminés.
+- Ne jamais commit, push, ouvrir ou modifier une Pull Request, changer le statut d'une issue ou fusionner sans accord explicite, sauf la mise à jour des statuts du Project prévue ci-dessus, autorisée par cette règle de suivi.
 - Ouvrir une Draft PR après le premier commit cohérent.
 - Garder la description de PR courte : résumé, validations, points à vérifier.
 - La référence `Closes #…` est autorisée uniquement dans la Pull Request.

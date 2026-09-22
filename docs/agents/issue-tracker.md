@@ -10,6 +10,8 @@ Le Project utilise seulement trois états :
 - `In Progress`
 - `Done`
 
+Lorsqu'un ticket est pris en charge, déplacer son élément du Project vers `In Progress`. Le passer à `Done` uniquement après la fusion de sa Pull Request, jamais après un simple commit ou une validation locale. Ce suivi des statuts est autorisé sans demande supplémentaire ; les autres actions GitHub (push, ouverture ou modification d'une PR, fusion) nécessitent un accord explicite.
+
 ## Format d'une issue
 
 Chaque issue reste courte et contient :
@@ -36,4 +38,4 @@ La Pull Request est ouverte en brouillon après le premier commit cohérent. Sa 
 
 La liaison avec l'issue peut apparaître uniquement dans la Pull Request sous la forme `Closes #…`. La fusion utilise un merge commit afin de conserver les commits pédagogiques. La branche est supprimée après fusion.
 
-Aucun commit, push, changement de statut, ouverture de Pull Request ou merge n'est effectué sans accord explicite de l'utilisateur.
+Aucun commit, push, ouverture de Pull Request ou merge n'est effectué sans accord explicite de l'utilisateur. Les changements de statut `In Progress` et `Done` suivent la règle ci-dessus.

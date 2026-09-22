@@ -1,0 +1,51 @@
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/manrope/latin-600.css";
+@import "tailwindcss";
+
+:root {
+  --brand: #d3590b;
+  --link: #ad4706;
+  --background: #f9fafb;
+  --surface: #ffffff;
+  --text: #1f1f1f;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --action: #1f1f1f;
+  --action-hover: #0f0f0f;
+  --on-action: #ffffff;
+  --abricot-radius-sm: 8px;
+  --abricot-radius-md: 10px;
+}
+
+@theme inline {
+  --font-sans: "Inter", Arial, sans-serif;
+  --font-heading: "Manrope", Arial, sans-serif;
+  --color-brand: var(--brand);
+  --color-link: var(--link);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-on-action: var(--on-action);
+  --radius-sm: var(--abricot-radius-sm);
+  --radius-md: var(--abricot-radius-md);
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: "Inter", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Manrope", Arial, sans-serif;
+}
