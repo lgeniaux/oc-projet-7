@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createSessionResponse } from "@/modules/auth/session-response";
+import { loginSchema } from "@/modules/auth/schemas";
 
 interface LoginResponse {
   success: boolean;
@@ -26,16 +28,8 @@ export async function POST(request: Request) {
     return errorResponse("Données de connexion invalides.", 400);
   }
 
-  if (
-    !credentials ||
-    typeof credentials !== "object" ||
-    !("email" in credentials) ||
-    typeof credentials.email !== "string" ||
-    !credentials.email.trim() ||
-    !("password" in credentials) ||
-    typeof credentials.password !== "string" ||
-    !credentials.password
-  ) {
+  const parsed = loginSchema.safeParse(credentials);
+  if (!parsed.success) {
     return errorResponse("Données de connexion invalides.", 400);
   }
 
@@ -50,8 +44,8 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: credentials.email,
-        password: credentials.password,
+        email: parsed.data.email,
+        password: parsed.data.password,
       }),
       cache: "no-store",
     });
@@ -85,16 +79,5 @@ export async function POST(request: Request) {
     return errorResponse("Service temporairement indisponible.", 503);
   }
 
-  const success = NextResponse.json(
-    { message: "Connexion réussie." },
-    { headers: { "Cache-Control": "no-store" } },
-  );
-  success.cookies.set("session", result.data.token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  return success;
+  return createSessionResponse("Connexion réussie.", result.data.token);
 }

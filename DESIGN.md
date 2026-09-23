@@ -98,6 +98,8 @@ Le bouton shadcn/ui est la première primitive intégrée, avec seulement les va
 
 Les cartes présentent un fond blanc et une bordure discrète, sans ombre par défaut. Les champs futurs seront explicitement étiquetés ; documenter leurs états focus, erreur et désactivé lors de leur implémentation. Les modales doivent gérer le focus, Échap et les annonces accessibles.
 
+L'inscription ajoutera un champ « Nom » obligatoire (au moins deux caractères) aux champs e-mail et mot de passe de `Sign In.png`, sur décision du porteur du projet : le visuel de référence n'en comporte que deux, tandis que la documentation Swagger le déclare obligatoire et que le code Express l'accepte comme optionnel. Conserver la hiérarchie de la maquette, avec trois champs accessibles et lisibles sur mobile. La connexion suivra `Log In.png` sans afficher le lien « Mot de passe oublié ? », faute de contrat backend.
+
 ## Do's and Don'ts
 
 - Préserver la hiérarchie des maquettes sans compromettre WCAG 2.1 AA ni la lecture sur petit écran.

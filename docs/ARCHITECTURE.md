@@ -69,9 +69,10 @@ Le projet n'introduit pas de préchargement ou d'hydratation avancée tant qu'un
 
 Le BFF Next.js constitue une frontière de sécurité fine, pas un second backend métier.
 
-- La connexion utilise `POST /api/auth/login` : le handler accepte les identifiants, transmet uniquement e-mail et mot de passe à `POST /auth/login` d'Express, et ne retourne jamais le token au navigateur dans le corps de réponse. L'inscription aura son propre handler explicite.
-- Les réponses d'authentification ne sont pas mises en cache. Le handler refuse les requêtes portant une origine différente et renvoie des messages génériques pour les erreurs du backend.
-- Le token reçu d'Express est stocké dans un cookie `session` de chemin `/`, `HttpOnly`, `SameSite=Lax`, valable sept jours (durée par défaut du JWT Express) et `Secure` en production.
+- La connexion utilise `POST /api/auth/login` : le handler accepte les identifiants, transmet uniquement e-mail et mot de passe à `POST /auth/login` d'Express, et ne retourne jamais le token au navigateur dans le corps de réponse.
+- L'inscription utilise `POST /api/auth/register` : le nom (au moins deux caractères), l'e-mail et le mot de passe sont transmis à `POST /auth/register` d'Express. Sur succès (`201`), le handler ouvre une session sans exposer le JWT ; un conflit (`409`) donne un message d'e-mail déjà utilisé. Le nom est exigé à cette frontière conformément à la décision du porteur du projet, même si l'implémentation Express l'autorise à être omis.
+- Les handlers valident leurs entrées avec les schémas Zod du module `auth` (également utilisables par les formulaires). Les réponses d'authentification ne sont pas mises en cache. Ils refusent les requêtes portant une origine différente et renvoient des messages génériques pour les erreurs du backend.
+- Le token reçu d'Express est stocké dans un cookie `session` de chemin `/`, `HttpOnly`, `SameSite=Lax`, valable sept jours (durée par défaut du JWT Express) et `Secure` en production. Les deux handlers partagent la fabrication de cette réponse pour conserver les mêmes attributs de cookie.
 - Les requêtes authentifiées passent par un proxy limité aux chemins et méthodes autorisés.
 - Le BFF ajoute le header `Authorization` attendu par Express.
 - Une réponse `401` invalide la session locale et déclenche une reconnexion explicite.
