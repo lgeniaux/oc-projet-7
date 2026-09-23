@@ -1,83 +1,48 @@
-import { NextResponse } from "next/server";
-import { createSessionResponse } from "@/modules/auth/session-response";
+import {
+  authError,
+  hasForeignOrigin,
+  postToAuthBackend,
+  readAuthFields,
+  readSessionToken,
+} from "@/modules/auth/auth-request";
 import { loginSchema } from "@/modules/auth/schemas";
+import { createSessionResponse } from "@/modules/auth/session-response";
 
-interface LoginResponse {
-  success: boolean;
-  data?: { token?: string };
-  error?: string;
-}
-
-function errorResponse(message: string, status: number) {
-  return NextResponse.json(
-    { message },
-    { status, headers: { "Cache-Control": "no-store" } },
-  );
-}
-
+/**
+ * Sign in with Express and set a session cookie.
+ * @param request - Login request.
+ * @returns Session response or safe error.
+ */
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
-    return errorResponse("Requête non autorisée.", 403);
+  if (hasForeignOrigin(request)) {
+    return authError("Requête non autorisée.", 403);
   }
 
-  let credentials: unknown;
-  try {
-    credentials = await request.json();
-  } catch {
-    return errorResponse("Données de connexion invalides.", 400);
+  const credentials = await readAuthFields(request, loginSchema);
+  if (!credentials) {
+    return authError("Données de connexion invalides.", 400);
   }
 
-  const parsed = loginSchema.safeParse(credentials);
-  if (!parsed.success) {
-    return errorResponse("Données de connexion invalides.", 400);
-  }
-
-  const backendUrl = process.env.BACKEND_URL;
-  if (!backendUrl) {
-    return errorResponse("Service temporairement indisponible.", 503);
-  }
-
-  let response: Response;
-  try {
-    response = await fetch(new URL("/auth/login", backendUrl), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: parsed.data.email,
-        password: parsed.data.password,
-      }),
-      cache: "no-store",
-    });
-  } catch {
-    return errorResponse("Service temporairement indisponible.", 503);
+  const response = await postToAuthBackend("/auth/login", credentials);
+  if (!response) {
+    return authError("Service temporairement indisponible.", 503);
   }
 
   if (response.status === 401) {
-    return errorResponse("E-mail ou mot de passe incorrect.", 401);
+    return authError("E-mail ou mot de passe incorrect.", 401);
   }
   if (response.status === 400) {
-    return errorResponse("Données de connexion invalides.", 400);
+    return authError("Données de connexion invalides.", 400);
   }
   if (!response.ok) {
-    return errorResponse("Service temporairement indisponible.", 503);
+    console.error("Unexpected auth backend status:", response.status);
+    return authError("Service temporairement indisponible.", 503);
   }
 
-  let result: LoginResponse;
-  try {
-    result = (await response.json()) as LoginResponse;
-  } catch {
-    return errorResponse("Service temporairement indisponible.", 503);
+  const token = await readSessionToken(response);
+  if (!token) {
+    return authError("Service temporairement indisponible.", 503);
   }
 
-  if (
-    !result ||
-    result.success !== true ||
-    typeof result.data?.token !== "string" ||
-    !result.data.token
-  ) {
-    return errorResponse("Service temporairement indisponible.", 503);
-  }
-
-  return createSessionResponse("Connexion réussie.", result.data.token);
+  return createSessionResponse("Connexion réussie.", token);
 }

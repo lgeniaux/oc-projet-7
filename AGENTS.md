@@ -56,7 +56,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Ne pas fragmenter artificiellement les composants.
 - Nommer explicitement les fonctions, composants, variables et types.
 - Éviter `any` dans le code applicatif.
-- Commenter une intention non évidente, jamais paraphraser le code.
+- Écrire les commentaires et JSDoc en anglais technique simple (Simplified Technical English) : phrases courtes, mots courants, un sens par phrase. Pour les flux backend/BFF, ajouter de brefs commentaires de section si utiles. Documenter les fonctions pertinentes au format JSDoc du backend (description, `@param`, `@returns`) en précisant seulement les contrats, échecs ou contraintes de sécurité qui aident à comprendre. Éviter la verbosité, la paraphrase du code et la copie des commentaires du backend.
 - Ajouter une dépendance seulement si son bénéfice peut être expliqué en soutenance.
 
 ## Interface

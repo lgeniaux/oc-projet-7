@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/auth/login/route";
 
 const backendFetch = vi.fn<typeof fetch>();
+let serverError: ReturnType<typeof vi.spyOn>;
 
 function loginRequest(
   body: unknown,
@@ -18,12 +19,14 @@ describe("POST /api/auth/login", () => {
   beforeEach(() => {
     vi.stubEnv("BACKEND_URL", "http://localhost:3001");
     vi.stubGlobal("fetch", backendFetch);
+    serverError = vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     backendFetch.mockReset();
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+    serverError.mockRestore();
   });
 
   it("places the backend token only in a protected cookie", async () => {
@@ -108,5 +111,29 @@ describe("POST /api/auth/login", () => {
     );
     expect(unavailable.status).toBe(503);
     expect(await unavailable.text()).not.toContain("Connection refused");
+    expect(JSON.stringify(serverError.mock.calls)).not.toContain(
+      "Connection refused",
+    );
+  });
+
+  it("rejects malformed backend payloads without logging a token", async () => {
+    backendFetch.mockResolvedValue(
+      Response.json({
+        success: true,
+        data: { token: 123, password: "sensitive" },
+      }),
+    );
+
+    const response = await POST(
+      loginRequest({ email: "a@example.com", password: "Password123!" }),
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(serverError).toHaveBeenCalledWith(
+      "Invalid auth backend payload, status:",
+      200,
+    );
+    expect(JSON.stringify(serverError.mock.calls)).not.toContain("sensitive");
   });
 });
