@@ -69,8 +69,9 @@ Le projet n'introduit pas de préchargement ou d'hydratation avancée tant qu'un
 
 Le BFF Next.js constitue une frontière de sécurité fine, pas un second backend métier.
 
-- L'inscription et la connexion possèdent des handlers explicites.
-- Le token reçu d'Express est stocké dans un cookie `HttpOnly`, `SameSite=Lax` et `Secure` en production.
+- La connexion utilise `POST /api/auth/login` : le handler accepte les identifiants, transmet uniquement e-mail et mot de passe à `POST /auth/login` d'Express, et ne retourne jamais le token au navigateur dans le corps de réponse. L'inscription aura son propre handler explicite.
+- Les réponses d'authentification ne sont pas mises en cache. Le handler refuse les requêtes portant une origine différente et renvoie des messages génériques pour les erreurs du backend.
+- Le token reçu d'Express est stocké dans un cookie `session` de chemin `/`, `HttpOnly`, `SameSite=Lax`, valable sept jours (durée par défaut du JWT Express) et `Secure` en production.
 - Les requêtes authentifiées passent par un proxy limité aux chemins et méthodes autorisés.
 - Le BFF ajoute le header `Authorization` attendu par Express.
 - Une réponse `401` invalide la session locale et déclenche une reconnexion explicite.
