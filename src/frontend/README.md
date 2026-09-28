@@ -12,7 +12,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Ouvrir <http://localhost:3000>. La page de présentation des fondations visuelles ne requiert pas le backend ; son bouton reste désactivé tant qu'aucune fonctionnalité métier n'est disponible. `BACKEND_URL` servira au BFF lorsqu'il sera implémenté ; ne pas préfixer cette variable par `NEXT_PUBLIC_`.
+Ouvrir <http://localhost:8001> (utiliser `localhost`, pas `127.0.0.1`). La page d'accueil fonctionne sans backend ; pour l'inscription et la connexion, démarrer Express sur `http://localhost:8000`. Son CORS autorise `localhost:8001` en développement. `NEXT_PUBLIC_API_URL` est visible dans le navigateur : ne jamais y mettre de secret. Le JWT retourné par Express est stocké dans `sessionStorage` pour l'onglet courant ; le BFF est en pause (voir `docs/adr/0001-direct-express-authentication.md`).
 
 ## Vérifications
 
@@ -26,14 +26,14 @@ npm run format:check
 npm run design:lint
 ```
 
-Pour Playwright, installer d'abord le navigateur avec `npx playwright install chromium` (et, si nécessaire, ses bibliothèques système avec `npx playwright install --with-deps chromium`). Le test E2E démarre lui-même l'application sur le port 3100.
+Pour Playwright, installer d'abord le navigateur avec `npx playwright install chromium` (et, si nécessaire, ses bibliothèques système avec `npx playwright install --with-deps chromium`). Le test E2E démarre lui-même l'application sur `localhost:8001`. Les futurs parcours d'authentification E2E nécessiteront Express et une base de test dédiée.
 
 Le formatage est assuré par `npm run format` (Prettier et tri des classes Tailwind). `design:lint` utilise le CLI officiel Google installé localement pour valider le `DESIGN.md` à la racine du dépôt.
 
 ## Organisation
 
 - `src/app` : routes et layout Next.js ;
-- `src/modules` : fonctionnalités métier à ajouter au fil des tickets ;
+- `src/modules` : fonctionnalités métier, dont les formulaires d'authentification ;
 - `src/components/ui` : première primitive shadcn/ui adaptée à Abricot (bouton) ;
 - `src/lib` : utilitaires transversaux ;
 - `public` : logos officiels SVG clair et blanc issus des maquettes ;

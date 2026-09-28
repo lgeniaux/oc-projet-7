@@ -73,7 +73,8 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 
 - Ne jamais versionner un fichier `.env`, un secret, un token ou des identifiants réels.
 - Versionner uniquement des fichiers `.env.example` avec des valeurs factices.
-- Ne jamais stocker le JWT dans `localStorage`.
+- Ne jamais stocker le JWT dans `localStorage`. Selon l'ADR 0001, l'authentification directe utilise `sessionStorage` pour l'onglet courant : reconnaître que le JWT y est accessible au JavaScript et ne jamais l'afficher ni le journaliser.
+- Le BFF et le cookie HttpOnly sont en pause. Ne pas supposer qu'Express crée ou lit des cookies : son contrat actuel renvoie `data.token` et attend `Authorization: Bearer`.
 - Le backend reste l'autorité finale pour l'authentification et les permissions.
 
 ## Tests et validations
