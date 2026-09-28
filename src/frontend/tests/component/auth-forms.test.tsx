@@ -42,7 +42,7 @@ describe("authentication forms", () => {
     expect(replace).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "Se connecter" }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
     expect(sessionStorage.getItem("authToken")).toBe("login-token");
     expect(apiFetch).toHaveBeenCalledWith(
       new URL("http://localhost:8000/auth/login"),
@@ -88,7 +88,7 @@ describe("authentication forms", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "S'inscrire" }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
     expect(sessionStorage.getItem("authToken")).toBe("register-token");
   });
 });

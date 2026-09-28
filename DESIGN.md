@@ -102,6 +102,8 @@ L'inscription ajoute un champ « Nom » obligatoire (au moins deux caractères) 
 
 Les champs d'authentification sont étiquetés, hauts de 48 px, bordés, avec un focus visible de 2 px. Les erreurs de champ sont reliées par `aria-describedby`, annoncées par `role="alert"` et colorées avec `link` (contraste AA) ; les erreurs serveur sont aussi annoncées. L'aide au mot de passe est affichée avant la saisie. Le bouton est désactivé pendant l'envoi et son texte annonce l'état de chargement. Les liens de navigation restent accessibles au clavier.
 
+L'entrée `/dashboard` attend la lecture de `sessionStorage` avant d'afficher son contenu : un message de chargement annoncé évite un flash de contenu lors de la redirection vers `/login`. En présence d'un token, elle montre pour l'instant un en-tête sobre inspiré de la maquette Dashboard (logo, fond blanc, bordure légère), un titre et un texte d'attente ; aucun faux projet ni fausse tâche n'est affiché. La déconnexion est un bouton visible et utilisable au clavier. La navigation complète et les déclinaisons mobile/tablette du shell seront ajoutées dans les étapes suivantes.
+
 ## Do's and Don'ts
 
 - Préserver la hiérarchie des maquettes sans compromettre WCAG 2.1 AA ni la lecture sur petit écran.
