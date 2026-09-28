@@ -51,35 +51,6 @@ export async function readAuthFields<T>(
 }
 
 /**
- * Send auth fields to Express.
- * @param path - Allowed auth path.
- * @param fields - Validated fields.
- * @returns Backend response, or null if the server URL is missing or the request fails.
- */
-export async function postToAuthBackend(
-  path: "/auth/login" | "/auth/register",
-  fields: object,
-) {
-  const backendUrl = process.env.BACKEND_URL;
-  if (!backendUrl) {
-    console.error("BACKEND_URL is not configured");
-    return null;
-  }
-
-  try {
-    return await fetch(new URL(path, backendUrl), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(fields),
-      cache: "no-store",
-    });
-  } catch {
-    console.error("Auth backend unavailable:", path);
-    return null;
-  }
-}
-
-/**
  * Read a valid token from Express.
  * @param response - Backend success response.
  * @returns Token, or null if the body is invalid.

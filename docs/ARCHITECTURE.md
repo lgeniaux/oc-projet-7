@@ -71,7 +71,7 @@ Le BFF Next.js constitue une frontière de sécurité fine, pas un second backen
 
 - La connexion utilise `POST /api/auth/login` : le handler accepte les identifiants, transmet uniquement e-mail et mot de passe à `POST /auth/login` d'Express, et ne retourne jamais le token au navigateur dans le corps de réponse.
 - L'inscription utilise `POST /api/auth/register` : le nom (au moins deux caractères), l'e-mail et le mot de passe sont transmis à `POST /auth/register` d'Express. Sur succès (`201`), le handler ouvre une session sans exposer le JWT ; un conflit (`409`) donne un message d'e-mail déjà utilisé. Le nom est exigé à cette frontière conformément à la décision du porteur du projet, même si l'implémentation Express l'autorise à être omis.
-- Les handlers restent des orchestrateurs lisibles : leurs statuts et messages spécifiques sont explicites ; le module `auth/auth-request.ts` partage la lecture et validation des entrées, l'appel Express et la validation de sa réponse de session. Les schémas Zod d'entrée sont également utilisables par les formulaires ; la réponse Express est vérifiée à l'exécution avant d'utiliser son token (aucune assertion TypeScript ne tient lieu de validation).
+- Les handlers restent des orchestrateurs lisibles : chaque route appelle explicitement son endpoint Express avec `fetch` et traite ses statuts et messages propres. Le module `auth/auth-request.ts` partage seulement la lecture et validation des entrées, les réponses d'erreur et la validation de la réponse de session. Les schémas Zod d'entrée sont également utilisables par les formulaires ; la réponse Express est vérifiée à l'exécution avant d'utiliser son token (aucune assertion TypeScript ne tient lieu de validation).
 - Les réponses d'authentification ne sont pas mises en cache. Les handlers refusent les requêtes portant une origine différente et renvoient des messages génériques pour les erreurs du backend. Les pannes et réponses inattendues sont journalisées côté serveur par étape et statut, sans identifiants, mots de passe, JWT ou corps de réponse.
 - Le token reçu d'Express est stocké dans un cookie `session` de chemin `/`, `HttpOnly`, `SameSite=Lax`, valable sept jours (durée par défaut du JWT Express) et `Secure` en production. Les deux handlers partagent la fabrication de cette réponse pour conserver les mêmes attributs de cookie.
 - Les requêtes authentifiées passent par un proxy limité aux chemins et méthodes autorisés.
@@ -103,6 +103,8 @@ Les tests vivent dans une arborescence séparée du code applicatif.
 - Les modules API peuvent être mockés avec Vitest dans les tests de composants.
 - Playwright couvre les parcours critiques contre Next.js, le BFF et le backend réel avec une base de test maîtrisée.
 - Axe et WAVE complètent les vérifications d'accessibilité.
+
+Les tests restent proportionnés aux risques : privilégier les parcours essentiels, les comportements visibles et les régressions réelles. Choisir le niveau le plus simple qui donne confiance, sans dupliquer chaque cas aux niveaux unitaire, composant et E2E ni viser 100 % de couverture.
 
 Le socle utilise ESLint (configuration Next.js), Prettier avec `prettier-plugin-tailwindcss`, Vitest + jsdom + React Testing Library et Playwright. Les tests vivent sous `src/frontend/tests/{unit,component,e2e}` ; Playwright lance Next.js sur le port 3100 pour son test de fumée. Aucun backend n'est requis pour ce test initial. Les scripts `lint`, `typecheck`, `test`, `test:e2e`, `build` et `format:check` sont exécutés depuis `src/frontend`.
 

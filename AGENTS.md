@@ -80,6 +80,11 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 
 Les tests vérifient les comportements observables, pas les détails d'implémentation.
 
+- Tester en priorité les parcours essentiels, les règles métier et les risques de sécurité ou de régression.
+- Pour chaque comportement, choisir le niveau de test le plus simple qui donne confiance ; ne pas tester la même chose à chaque niveau sans raison.
+- Regrouper les cas équivalents et éviter les tests de chaque branche, des fonctions triviales ou des détails de bibliothèque. Ajouter un test de régression lorsqu'un bug réel le justifie.
+- Garder les tests courts, lisibles et proportionnés au risque ; ne pas chercher une couverture de 100 %.
+
 Avant un commit, exécuter au minimum :
 
 - le lint ;

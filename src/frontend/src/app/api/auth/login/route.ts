@@ -1,7 +1,6 @@
 import {
   authError,
   hasForeignOrigin,
-  postToAuthBackend,
   readAuthFields,
   readSessionToken,
 } from "@/modules/auth/auth-request";
@@ -23,8 +22,22 @@ export async function POST(request: Request) {
     return authError("Données de connexion invalides.", 400);
   }
 
-  const response = await postToAuthBackend("/auth/login", credentials);
-  if (!response) {
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) {
+    console.error("BACKEND_URL is not configured");
+    return authError("Service temporairement indisponible.", 503);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(new URL("/auth/login", backendUrl), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(credentials),
+      cache: "no-store",
+    });
+  } catch {
+    console.error("Auth backend unavailable: /auth/login");
     return authError("Service temporairement indisponible.", 503);
   }
 
