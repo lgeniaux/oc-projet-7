@@ -56,7 +56,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Ne pas fragmenter artificiellement les composants.
 - Nommer explicitement les fonctions, composants, variables et types.
 - Éviter `any` dans le code applicatif.
-- Commenter une intention non évidente, jamais paraphraser le code.
+- Écrire les commentaires et JSDoc en anglais technique simple (Simplified Technical English) : phrases courtes, mots courants, un sens par phrase. Pour les flux backend/BFF, ajouter de brefs commentaires de section si utiles. Documenter les fonctions pertinentes au format JSDoc du backend (description, `@param`, `@returns`) en précisant seulement les contrats, échecs ou contraintes de sécurité qui aident à comprendre. Éviter la verbosité, la paraphrase du code et la copie des commentaires du backend.
 - Ajouter une dépendance seulement si son bénéfice peut être expliqué en soutenance.
 
 ## Interface
@@ -73,12 +73,18 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 
 - Ne jamais versionner un fichier `.env`, un secret, un token ou des identifiants réels.
 - Versionner uniquement des fichiers `.env.example` avec des valeurs factices.
-- Ne jamais stocker le JWT dans `localStorage`.
+- Ne jamais stocker le JWT dans `localStorage`. Selon l'ADR 0001, l'authentification directe utilise `sessionStorage` pour l'onglet courant : reconnaître que le JWT y est accessible au JavaScript et ne jamais l'afficher ni le journaliser.
+- Le BFF et le cookie HttpOnly sont en pause. Ne pas supposer qu'Express crée ou lit des cookies : son contrat actuel renvoie `data.token` et attend `Authorization: Bearer`.
 - Le backend reste l'autorité finale pour l'authentification et les permissions.
 
 ## Tests et validations
 
 Les tests vérifient les comportements observables, pas les détails d'implémentation.
+
+- Tester en priorité les parcours essentiels, les règles métier et les risques de sécurité ou de régression.
+- Pour chaque comportement, choisir le niveau de test le plus simple qui donne confiance ; ne pas tester la même chose à chaque niveau sans raison.
+- Regrouper les cas équivalents et éviter les tests de chaque branche, des fonctions triviales ou des détails de bibliothèque. Ajouter un test de régression lorsqu'un bug réel le justifie.
+- Garder les tests courts, lisibles et proportionnés au risque ; ne pas chercher une couverture de 100 %.
 
 Avant un commit, exécuter au minimum :
 

@@ -43,13 +43,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Ouvrir <http://localhost:3000>. La page initiale fonctionne sans backend. Voir `src/frontend/README.md` pour les commandes de validation et les prérequis Playwright.
+Ouvrir <http://localhost:8001>. La page initiale fonctionne sans backend ; l'inscription et la connexion appellent directement Express sur `http://localhost:8000` (CORS du backend inchangé). Voir `src/frontend/README.md` pour la configuration, les validations et les prérequis Playwright.
 
 ## Documentation de travail
 
 - `AGENTS.md` : règles de contribution des agents ;
 - `CONTEXT.md` : vocabulaire métier ;
 - `docs/ARCHITECTURE.md` : architecture technique ;
+- `docs/adr/0001-direct-express-authentication.md` : décision sur l'authentification directe et `sessionStorage` ;
 - `DESIGN.md` : tokens YAML et règles visuelles selon le format Google (vérifier avec `cd src/frontend && npm run design:lint`) ;
 - `sujet/` : documents et maquettes fournis.
 

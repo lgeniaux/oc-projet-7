@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,6 +28,20 @@ export default function HomePage() {
             Abricot vous aidera bientôt à organiser vos projets et vos tâches
             avec votre équipe.
           </p>
+          <nav
+            aria-label="Accès au compte"
+            className="flex flex-wrap items-center gap-5 pt-3"
+          >
+            <Button asChild>
+              <Link href="/register">Créer un compte</Link>
+            </Button>
+            <Link
+              href="/login"
+              className="text-link underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+            >
+              Se connecter
+            </Link>
+          </nav>
         </div>
 
         <section

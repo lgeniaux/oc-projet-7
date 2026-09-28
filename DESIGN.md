@@ -80,7 +80,7 @@ Le gris `muted` sur blanc atteint 4,83:1 et sur `background` 4,63:1. Ces ratios 
 
 ## Layout
 
-Les maquettes desktop sont fournies en largeur 1440 px. Le dashboard a un en-tête d'environ 94 px de haut ; son contenu est centré (environ 100 px de marge de chaque côté). La grille des projets comporte trois colonnes avec des intervalles d'environ 16 px ; le Kanban utilise trois colonnes avec des intervalles d'environ 22 px. Ces mesures servent de repères, pas de contraintes sur petit écran. Les espacements de 8, 16, 24, 32 et 48 px normalisent les écarts observés. La page d'accueil est volontairement plus simple : gouttière de 24 px sur mobile, deux colonnes à partir de la tablette.
+Les maquettes desktop sont fournies en largeur 1440 px. Le dashboard a un en-tête d'environ 94 px de haut ; son contenu est centré (environ 100 px de marge de chaque côté). La grille des projets comporte trois colonnes avec des intervalles d'environ 16 px ; le Kanban utilise trois colonnes avec des intervalles d'environ 22 px. Ces mesures servent de repères, pas de contraintes sur petit écran. Les espacements de 8, 16, 24, 32 et 48 px normalisent les écarts observés. La page d'accueil est volontairement plus simple : gouttière de 24 px sur mobile, deux colonnes à partir de la tablette. Les pages d'authentification reprennent le panneau clair (39 % de la largeur desktop) et l'image à droite des maquettes. Sur petit écran, l'image décorative est masquée et le formulaire utilise toute la largeur disponible, sans défilement horizontal.
 
 Sur tablette et mobile, conserver l'ordre de lecture, replier les colonnes et préserver des contrôles utilisables sans défilement horizontal. Ne pas déduire de seuils de rupture arbitraires des seules maquettes desktop.
 
@@ -97,6 +97,10 @@ Les cartes, champs et boutons présentent des coins légèrement arrondis (envir
 Le bouton shadcn/ui est la première primitive intégrée, avec seulement les variantes `default` (fond sombre, texte blanc) et `outline` (fond blanc bordé). Hauteur minimale de 48 px, rayon de 10 px, focus clavier visible et état désactivé explicite. Ce thème remplace les valeurs neutres par défaut du générateur ; ne pas réimporter son thème générique lors de l'ajout d'autres primitives. `lucide-react` fournit les pictogrammes fonctionnels ; les logos officiels SVG restent des fichiers locaux, avec une alternative textuelle pertinente selon le contexte.
 
 Les cartes présentent un fond blanc et une bordure discrète, sans ombre par défaut. Les champs futurs seront explicitement étiquetés ; documenter leurs états focus, erreur et désactivé lors de leur implémentation. Les modales doivent gérer le focus, Échap et les annonces accessibles.
+
+L'inscription ajoute un champ « Nom » obligatoire (au moins deux caractères) aux champs e-mail et mot de passe de `Sign In.png`, sur décision du porteur du projet : le visuel de référence n'en comporte que deux, tandis que la documentation Swagger le déclare obligatoire et que le code Express l'accepte comme optionnel. La connexion suit `Log In.png` sans afficher le lien « Mot de passe oublié ? », faute de contrat backend. Les photos décoratives proviennent du recadrage des parties droites des maquettes et sont chargées localement.
+
+Les champs d'authentification sont étiquetés, hauts de 48 px, bordés, avec un focus visible de 2 px. Les erreurs de champ sont reliées par `aria-describedby`, annoncées par `role="alert"` et colorées avec `link` (contraste AA) ; les erreurs serveur sont aussi annoncées. L'aide au mot de passe est affichée avant la saisie. Le bouton est désactivé pendant l'envoi et son texte annonce l'état de chargement. Les liens de navigation restent accessibles au clavier.
 
 ## Do's and Don'ts
 

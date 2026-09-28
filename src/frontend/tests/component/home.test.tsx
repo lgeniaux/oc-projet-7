@@ -16,5 +16,12 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("button", { name: "Disponible prochainement" }),
     ).toBeDisabled();
+    expect(
+      screen.getByRole("link", { name: "Créer un compte" }),
+    ).toHaveAttribute("href", "/register");
+    expect(screen.getByRole("link", { name: "Se connecter" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
   });
 });

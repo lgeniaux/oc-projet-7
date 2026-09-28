@@ -3,24 +3,18 @@
 ## Objectifs
 
 - Consommer le backend Express fourni sans en dupliquer la logique métier.
-- Protéger le JWT contre l'accès par le JavaScript du navigateur.
+- Conserver le JWT uniquement pour l'onglet courant sans utiliser `localStorage`, en documentant son exposition au JavaScript.
 - Garder une architecture standard, explicite et accessible à un développeur débutant.
 - Permettre des fonctionnalités verticales testables indépendamment.
 
 ## Vue d'ensemble
 
 ```text
-Navigateur
+Navigateur ── pages ──► Frontend Next.js
+    │                   ├── Server Components et layouts
+    │                   └── formulaires Client Components
     │
-    │ pages et /api
-    ▼
-Frontend Next.js
-    ├── Server Components et layouts
-    ├── Client Components interactifs
-    ├── BFF minimal
-    └── cookie de session HttpOnly
-    │
-    │ Authorization: Bearer <token>
+    │ JWT en sessionStorage ; requêtes directes avec Bearer
     ▼
 Backend Express fourni
     │
@@ -45,7 +39,7 @@ Le frontend et le backend restent deux projets npm indépendants. Le backend est
 Le frontend est initialisé dans `src/frontend`, avec son propre `package.json` et `package-lock.json`. Les routes App Router sont dans `src/frontend/src/app`. Les dossiers `modules` et `components` sont réservés aux besoins futurs ; `lib` accueille les utilitaires transversaux. L'organisation est hybride :
 
 ```text
-app/          routes, layouts et endpoints BFF
+app/          routes et layouts Next.js
 components/   composants génériques, dont les primitives UI
 modules/      authentification, compte, projets, tâches et dashboard
 lib/          utilitaires transversaux et infrastructure
@@ -65,16 +59,15 @@ Les Server Components sont le choix par défaut. Un composant devient client lor
 
 Le projet n'introduit pas de préchargement ou d'hydratation avancée tant qu'un besoin mesurable ne le justifie pas.
 
-## BFF et authentification
+## Authentification directe
 
-Le BFF Next.js constitue une frontière de sécurité fine, pas un second backend métier.
+Voir [ADR 0001](adr/0001-direct-express-authentication.md). Le BFF et le cookie HttpOnly sont en pause ; le backend fourni reste inchangé.
 
-- L'inscription et la connexion possèdent des handlers explicites.
-- Le token reçu d'Express est stocké dans un cookie `HttpOnly`, `SameSite=Lax` et `Secure` en production.
-- Les requêtes authentifiées passent par un proxy limité aux chemins et méthodes autorisés.
-- Le BFF ajoute le header `Authorization` attendu par Express.
-- Une réponse `401` invalide la session locale et déclenche une reconnexion explicite.
-- Le JWT n'est jamais envoyé au code JavaScript applicatif ni stocké dans `localStorage`.
+- Les pages publiques `/login` et `/register` sont des Server Components qui composent une présentation partagée et deux formulaires Client Components. React Hook Form et Zod valident les champs avant un appel direct à `POST /auth/login` ou `POST /auth/register` d'Express. Le nom (au moins deux caractères) est requis à l'inscription sur décision du porteur du projet, même si Express le permet optionnellement.
+- Une réponse Express de succès est vérifiée à l'exécution avant stockage du JWT dans `sessionStorage`. Le token survit au rechargement du même onglet mais reste accessible au JavaScript ; ne pas utiliser `localStorage`. Les réponses `401`, `409`, `400` et les pannes donnent des messages utilisateur en français sans divulguer la réponse brute.
+- Les futures requêtes privées devront envoyer `Authorization: Bearer <token>` directement à Express ; Express reste l'autorité pour les droits. Une réponse `401` devra effacer la session locale et demander une reconnexion explicite.
+- Un Server Component ne peut pas lire `sessionStorage` : la protection côté serveur du shell privé prévue au ticket #5 est bloquée par ce choix et doit être réarbitrée avant implémentation. Les données API restent protégées par Express.
+- Après succès, les formulaires naviguent provisoirement vers `/`, page publique, jusqu'à l'existence d'une destination applicative. TanStack Query n'est pas requis pour ces soumissions ponctuelles.
 
 ## Données et formulaires
 
@@ -96,14 +89,16 @@ Le fichier racine `DESIGN.md` suit le format alpha de Google (frontmatter YAML d
 Les tests vivent dans une arborescence séparée du code applicatif.
 
 - Vitest couvre les schémas et fonctions métier pures.
-- React Testing Library couvre les composants à travers leurs comportements visibles.
+- React Testing Library couvre les composants à travers leurs comportements visibles. Pour l'authentification, deux tests de composants couvrent validation, erreur de conflit/identifiants, stockage du JWT dans l'onglet et navigation après succès.
 - Les modules API peuvent être mockés avec Vitest dans les tests de composants.
-- Playwright couvre les parcours critiques contre Next.js, le BFF et le backend réel avec une base de test maîtrisée.
+- Playwright couvre les parcours critiques contre Next.js et le backend Express réel avec une base de test maîtrisée.
 - Axe et WAVE complètent les vérifications d'accessibilité.
 
-Le socle utilise ESLint (configuration Next.js), Prettier avec `prettier-plugin-tailwindcss`, Vitest + jsdom + React Testing Library et Playwright. Les tests vivent sous `src/frontend/tests/{unit,component,e2e}` ; Playwright lance Next.js sur le port 3100 pour son test de fumée. Aucun backend n'est requis pour ce test initial. Les scripts `lint`, `typecheck`, `test`, `test:e2e`, `build` et `format:check` sont exécutés depuis `src/frontend`.
+Les tests restent proportionnés aux risques : privilégier les parcours essentiels, les comportements visibles et les régressions réelles. Choisir le niveau le plus simple qui donne confiance, sans dupliquer chaque cas aux niveaux unitaire, composant et E2E ni viser 100 % de couverture.
 
-Le fichier `src/frontend/.env.example` documente `BACKEND_URL`, future URL serveur du BFF ; la page initiale ne l'utilise pas encore.
+Le socle utilise ESLint (configuration Next.js), Prettier avec `prettier-plugin-tailwindcss`, Vitest + jsdom + React Testing Library et Playwright. Les tests vivent sous `src/frontend/tests/{unit,component,e2e}` ; Playwright lance Next.js sur `localhost:8001` pour son test de fumée. Aucun backend n'est requis pour ce test initial. Les scripts `lint`, `typecheck`, `test`, `test:e2e`, `build` et `format:check` sont exécutés depuis `src/frontend`.
+
+Le fichier `src/frontend/.env.example` documente `NEXT_PUBLIC_API_URL` : URL Express visible du navigateur. En développement, Next.js utilise `localhost:8001`, seule origine frontend autorisée par le CORS Express inchangé ; le déploiement exige une décision distincte sur l'origine de production.
 
 ## Gestion des divergences
 
