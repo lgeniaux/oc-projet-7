@@ -46,7 +46,13 @@ describe("app shell", () => {
     apiFetch.mockResolvedValue(
       Response.json({
         success: true,
-        data: { user: { name: "Alice Martin", email: "alice@example.com" } },
+        data: {
+          user: {
+            id: "alice",
+            name: "Alice Martin",
+            email: "alice@example.com",
+          },
+        },
       }),
     );
     render(

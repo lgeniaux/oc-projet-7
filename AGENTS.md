@@ -69,6 +69,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Les contrôles d'interface (boutons, champs, libellés, modales, menus…) utilisent les primitives shadcn/ui, ajoutées au premier besoin et adaptées au thème Abricot. Ne pas réécrire à la main un contrôle que shadcn/ui fournit.
 - L'accessibilité et le fonctionnement priment lorsqu'ils entrent en conflit avec un détail visuel.
 - Toute interface doit gérer les états de chargement, vide et erreur pertinents.
+- Consigner chaque écart avec le sujet, les maquettes ou le backend, et chaque choix technique ou produit à justifier en soutenance, dans `docs/ecarts-et-decisions.md`, dans le même changement que la décision.
 - Faire correspondre la validation des formulaires au contrat réel du backend, y compris les caractères autorisés ; documenter les divergences décidées avec les maquettes ou le sujet.
 - Toute suppression destructive demande confirmation.
 
