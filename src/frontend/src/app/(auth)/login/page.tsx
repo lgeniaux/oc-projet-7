@@ -4,7 +4,12 @@ import { LoginForm } from "@/modules/auth/login-form";
 
 export const metadata: Metadata = { title: "Connexion | Abricot" };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reason?: string | string[] }>;
+}) {
+  const { reason } = await searchParams;
   return (
     <AuthPage
       title="Connexion"
@@ -13,6 +18,11 @@ export default function LoginPage() {
       alternateLink="Créer un compte"
       alternateHref="/register"
     >
+      {reason === "session-expired" && (
+        <p role="status" className="mb-6 rounded-sm border border-border bg-surface p-4 text-sm">
+          Votre session a expiré. Connectez-vous à nouveau pour continuer.
+        </p>
+      )}
       <LoginForm />
     </AuthPage>
   );

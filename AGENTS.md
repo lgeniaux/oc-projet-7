@@ -65,6 +65,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Le code, les noms de fichiers et les messages de commit sont en anglais.
 - La documentation de travail et le README sont en français.
 - Les maquettes déterminent la structure et l'identité visuelle ; la cible est une fidélité forte sans pixel-perfect.
+- Les contrôles d'interface (boutons, champs, libellés, modales, menus…) utilisent les primitives shadcn/ui, ajoutées au premier besoin et adaptées au thème Abricot. Ne pas réécrire à la main un contrôle que shadcn/ui fournit.
 - L'accessibilité et le fonctionnement priment lorsqu'ils entrent en conflit avec un détail visuel.
 - Toute interface doit gérer les états de chargement, vide et erreur pertinents.
 - Toute suppression destructive demande confirmation.
