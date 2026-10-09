@@ -25,7 +25,11 @@ afterEach(() => {
 describe("app shell", () => {
   it("hides the page content and redirects without a tab token", async () => {
     vi.stubGlobal("fetch", apiFetch);
-    render(<AppShell><h1>Contenu de la page</h1></AppShell>);
+    render(
+      <AppShell>
+        <h1>Contenu de la page</h1>
+      </AppShell>,
+    );
 
     expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
@@ -39,13 +43,32 @@ describe("app shell", () => {
     sessionStorage.setItem("authToken", "tab-token");
     vi.stubGlobal("fetch", apiFetch);
     vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:8000");
-    apiFetch.mockResolvedValue(Response.json({ success: true, data: { user: { name: "Alice" } } }));
-    render(<AppShell><h1>Mes projets</h1></AppShell>);
+    apiFetch.mockResolvedValue(
+      Response.json({
+        success: true,
+        data: { user: { name: "Alice", email: "alice@example.com" } },
+      }),
+    );
+    render(
+      <AppShell>
+        <h1>Mes projets</h1>
+      </AppShell>,
+    );
 
-    expect(await screen.findByRole("heading", { name: "Mes projets" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "Projets" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Mon compte" })).toHaveAttribute("href", "/account");
-    expect(screen.getByRole("link", { name: "Tableau de bord" })).not.toHaveAttribute("aria-current");
+    expect(
+      await screen.findByRole("heading", { name: "Mes projets" }),
+    ).toBeVisible();
+    expect(screen.getByRole("link", { name: "Projets" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "Mon compte" })).toHaveAttribute(
+      "href",
+      "/account",
+    );
+    expect(
+      screen.getByRole("link", { name: "Tableau de bord" }),
+    ).not.toHaveAttribute("aria-current");
     await screen.findByText(/Bonjour Alice/);
     const headers = apiFetch.mock.calls[0][1]?.headers as Headers;
     expect(headers.get("Authorization")).toBe("Bearer tab-token");
@@ -61,13 +84,23 @@ describe("app shell", () => {
     vi.stubGlobal("fetch", apiFetch);
     vi.stubEnv("NEXT_PUBLIC_API_URL", "http://localhost:8000");
     apiFetch.mockResolvedValue(new Response(null, { status: 401 }));
-    const { unmount } = render(<AppShell><h1>Contenu de la page</h1></AppShell>);
+    const { unmount } = render(
+      <AppShell>
+        <h1>Contenu de la page</h1>
+      </AppShell>,
+    );
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login?reason=session-expired"));
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/login?reason=session-expired"),
+    );
     expect(sessionStorage.getItem("authToken")).toBeNull();
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     unmount();
-    render(await LoginPage({ searchParams: Promise.resolve({ reason: "session-expired" }) }));
+    render(
+      await LoginPage({
+        searchParams: Promise.resolve({ reason: "session-expired" }),
+      }),
+    );
     expect(screen.getByRole("status")).toHaveTextContent(/session.*expiré/i);
     expect(screen.getByRole("button", { name: "Se connecter" })).toBeVisible();
   });

@@ -53,6 +53,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Organiser le métier par modules sans considérer l'arborescence comme immuable.
 - Ne créer une abstraction qu'à partir d'un besoin concret, généralement au second usage réel.
 - Ne pas ajouter de wrapper autour d'une bibliothèque sans bénéfice explicite.
+- Garder les données authentifiées partagées dans le sous-arbre du provider de l'application, démonté à la déconnexion.
 - Ne pas fragmenter artificiellement les composants.
 - Nommer explicitement les fonctions, composants, variables et types.
 - Éviter `any` dans le code applicatif.
@@ -68,6 +69,7 @@ Une partie indépendante du travail peut continuer si elle n'est pas concernée.
 - Les contrôles d'interface (boutons, champs, libellés, modales, menus…) utilisent les primitives shadcn/ui, ajoutées au premier besoin et adaptées au thème Abricot. Ne pas réécrire à la main un contrôle que shadcn/ui fournit.
 - L'accessibilité et le fonctionnement priment lorsqu'ils entrent en conflit avec un détail visuel.
 - Toute interface doit gérer les états de chargement, vide et erreur pertinents.
+- Faire correspondre la validation des formulaires au contrat réel du backend, y compris les caractères autorisés ; documenter les divergences décidées avec les maquettes ou le sujet.
 - Toute suppression destructive demande confirmation.
 
 ## Sécurité
