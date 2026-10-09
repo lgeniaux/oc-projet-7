@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { loginSchema, type LoginFields } from "@/modules/auth/schemas";
 import { saveAuthToken } from "@/modules/auth/session";
 
@@ -54,16 +56,15 @@ export function LoginForm() {
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <label htmlFor="login-email" className="mb-1 block text-sm">
+        <Label htmlFor="login-email" className="mb-1 block text-sm">
           E-mail
-        </label>
-        <input
+        </Label>
+        <Input
           id="login-email"
           type="email"
           autoComplete="email"
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? "login-email-error" : undefined}
-          className="h-12 w-full rounded-sm border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link aria-invalid:border-link"
           {...register("email")}
         />
         {errors.email && (
@@ -77,10 +78,10 @@ export function LoginForm() {
         )}
       </div>
       <div>
-        <label htmlFor="login-password" className="mb-1 block text-sm">
+        <Label htmlFor="login-password" className="mb-1 block text-sm">
           Mot de passe
-        </label>
-        <input
+        </Label>
+        <Input
           id="login-password"
           type="password"
           autoComplete="current-password"
@@ -88,7 +89,6 @@ export function LoginForm() {
           aria-describedby={
             errors.password ? "login-password-error" : undefined
           }
-          className="h-12 w-full rounded-sm border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link aria-invalid:border-link"
           {...register("password")}
         />
         {errors.password && (
