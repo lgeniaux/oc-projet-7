@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { registerSchema, type RegisterFields } from "@/modules/auth/schemas";
 import { saveAuthToken } from "@/modules/auth/session";
 
@@ -58,16 +60,15 @@ export function RegisterForm() {
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div>
-        <label htmlFor="register-name" className="mb-1 block text-sm">
+        <Label htmlFor="register-name" className="mb-1 block text-sm">
           Nom
-        </label>
-        <input
+        </Label>
+        <Input
           id="register-name"
           type="text"
           autoComplete="name"
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "register-name-error" : undefined}
-          className="h-12 w-full rounded-sm border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link aria-invalid:border-link"
           {...register("name")}
         />
         {errors.name && (
@@ -81,16 +82,15 @@ export function RegisterForm() {
         )}
       </div>
       <div>
-        <label htmlFor="register-email" className="mb-1 block text-sm">
+        <Label htmlFor="register-email" className="mb-1 block text-sm">
           E-mail
-        </label>
-        <input
+        </Label>
+        <Input
           id="register-email"
           type="email"
           autoComplete="email"
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? "register-email-error" : undefined}
-          className="h-12 w-full rounded-sm border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link aria-invalid:border-link"
           {...register("email")}
         />
         {errors.email && (
@@ -104,10 +104,10 @@ export function RegisterForm() {
         )}
       </div>
       <div>
-        <label htmlFor="register-password" className="mb-1 block text-sm">
+        <Label htmlFor="register-password" className="mb-1 block text-sm">
           Mot de passe
-        </label>
-        <input
+        </Label>
+        <Input
           id="register-password"
           type="password"
           autoComplete="new-password"
@@ -117,7 +117,6 @@ export function RegisterForm() {
               ? "register-password-help register-password-error"
               : "register-password-help"
           }
-          className="h-12 w-full rounded-sm border border-border bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link aria-invalid:border-link"
           {...register("password")}
         />
         <p id="register-password-help" className="mt-1 text-xs text-muted">

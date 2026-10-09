@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FolderOpen, LayoutDashboard, UserRound } from "lucide-react";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { authenticatedFetch } from "@/modules/auth/authenticated-fetch";
+import { FolderOpen, LayoutDashboard, LogOut, UserRound } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AppQueryProvider } from "@/modules/auth/app-query-provider";
+import { useProfileQuery, type Profile } from "@/modules/auth/profile-query";
 import {
   clearAuthToken,
   getLoginDestination,
@@ -18,13 +23,20 @@ import {
 const navigation = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/projects", label: "Projets", icon: FolderOpen },
-  { href: "/account", label: "Mon compte", icon: UserRound },
 ];
 
-const profileResponseSchema = z.object({
-  success: z.literal(true),
-  data: z.object({ user: z.object({ name: z.string().optional() }) }),
-});
+/**
+ * Build the avatar initials from the real profile.
+ * @param profile - The Express profile.
+ * @returns The first letters of the first and last name words, or of the e-mail.
+ */
+function getInitials(profile: Profile) {
+  const words = profile.name?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (words.length === 0) return profile.email.charAt(0).toUpperCase();
+  const first = words[0].charAt(0);
+  const last = words.length > 1 ? words[words.length - 1].charAt(0) : "";
+  return `${first}${last}`.toUpperCase();
+}
 
 /**
  * Hide the app pages until the browser reads the tab token.
@@ -34,7 +46,11 @@ const profileResponseSchema = z.object({
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const token = useSyncExternalStore(subscribeToSession, getTabToken, () => null);
+  const token = useSyncExternalStore(
+    subscribeToSession,
+    getTabToken,
+    () => null,
+  );
 
   useEffect(() => {
     if (!getTabToken()) {
@@ -50,35 +66,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <AppShellContent>{children}</AppShellContent>;
+  return (
+    <AppQueryProvider>
+      <AppShellContent>{children}</AppShellContent>
+    </AppQueryProvider>
+  );
 }
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [profileName, setProfileName] = useState("");
-  const [profileError, setProfileError] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    async function loadProfile() {
-      try {
-        const response = await authenticatedFetch("/auth/profile", {
-          signal: controller.signal,
-        });
-        if (response.status === 401) return;
-        if (!response.ok) throw new Error("Profile unavailable");
-        const body: unknown = await response.json();
-        const profile = profileResponseSchema.parse(body);
-        if (!controller.signal.aborted) {
-          setProfileName(profile.data.user.name ?? "");
-        }
-      } catch {
-        if (!controller.signal.aborted) setProfileError(true);
-      }
-    }
-    void loadProfile();
-    return () => controller.abort();
-  }, []);
+  const profile = useProfileQuery();
+  const isAccountPage = pathname === "/account";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -90,7 +88,12 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       </a>
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-10 lg:flex-nowrap">
-          <Image src="/abricot-logo.svg" alt="Abricot" width={147} height={19} />
+          <Image
+            src="/abricot-logo.svg"
+            alt="Abricot"
+            width={147}
+            height={19}
+          />
           <nav
             aria-label="Navigation principale"
             className="order-last w-full lg:order-none lg:w-auto"
@@ -99,7 +102,8 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
               {navigation.map(({ href, label, icon: Icon }) => {
                 // Every path starts with "/", so the home link must match exactly.
                 const isCurrent =
-                  pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+                  pathname === href ||
+                  (href !== "/" && pathname.startsWith(`${href}/`));
                 return (
                   <li key={href} className="flex-1 sm:flex-none">
                     <Link
@@ -119,9 +123,42 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
               })}
             </ul>
           </nav>
-          <Button variant="outline" onClick={() => clearAuthToken()}>
-            Se déconnecter
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Menu du compte"
+              className={`flex size-14 shrink-0 items-center justify-center rounded-full text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${
+                isAccountPage
+                  ? "bg-link text-on-action"
+                  : "bg-brand-soft text-text hover:bg-brand-soft/70"
+              }`}
+            >
+              {profile.data ? (
+                <span aria-hidden="true">{getInitials(profile.data)}</span>
+              ) : (
+                <UserRound aria-hidden="true" className="size-6" />
+              )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {profile.data && (
+                <p className="truncate px-3 py-2 text-sm text-muted">
+                  {profile.data.name || profile.data.email}
+                </p>
+              )}
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/account"
+                  aria-current={isAccountPage ? "page" : undefined}
+                >
+                  <UserRound aria-hidden="true" />
+                  Mon compte
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => clearAuthToken()}>
+                <LogOut aria-hidden="true" />
+                Se déconnecter
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
       <main
@@ -129,8 +166,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         tabIndex={-1}
         className="mx-auto w-full max-w-7xl flex-1 px-6 py-10 focus-visible:outline-2 focus-visible:outline-link sm:px-10 sm:py-14"
       >
-        {profileName && <p className="mb-4 text-sm text-muted">Bonjour {profileName}</p>}
-        {profileError && (
+        {profile.data?.name && (
+          <p className="mb-4 text-sm text-muted">Bonjour {profile.data.name}</p>
+        )}
+        {profile.isError && (
           <p role="status" className="mb-4 text-sm text-muted">
             Votre profil est indisponible pour le moment. Réessayez plus tard.
           </p>

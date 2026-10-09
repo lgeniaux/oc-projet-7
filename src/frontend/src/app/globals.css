@@ -5,6 +5,7 @@
 
 :root {
   --brand: #d3590b;
+  --brand-soft: #ffe8d9;
   --link: #ad4706;
   --background: #f9fafb;
   --surface: #ffffff;
@@ -22,6 +23,7 @@
   --font-sans: "Inter", Arial, sans-serif;
   --font-heading: "Manrope", Arial, sans-serif;
   --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --color-link: var(--link);
   --color-background: var(--background);
   --color-surface: var(--surface);

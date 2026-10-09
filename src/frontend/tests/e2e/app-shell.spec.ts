@@ -15,7 +15,6 @@ for (const width of [375, 768, 1440]) {
 
     for (const destination of [
       { link: "Projets", heading: "Mes projets", path: "/projects" },
-      { link: "Mon compte", heading: "Mon compte", path: "/account" },
       { link: "Tableau de bord", heading: "Tableau de bord", path: "/" },
     ]) {
       const link = page.getByRole("link", { name: destination.link, exact: true });
@@ -27,10 +26,22 @@ for (const width of [375, 768, 1440]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }
 
+    // The account page and sign-out live in the avatar menu.
+    const accountMenu = page.getByRole("button", { name: "Menu du compte" });
+    await accountMenu.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menuitem", { name: "Mon compte" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL("/account");
+    await expect(page.getByRole("heading", { level: 1, name: "Mon compte" })).toBeVisible();
+
     await page.getByRole("link", { name: "Aller au contenu" }).focus();
     await page.keyboard.press("Enter");
     await expect(page.locator("#main-content")).toBeFocused();
-    await page.getByRole("button", { name: /déconnecter/ }).focus();
+    await accountMenu.focus();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await expect(page.getByRole("menuitem", { name: "Se déconnecter" })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL("/login");
     expect(await page.evaluate(() => sessionStorage.getItem("authToken") === null)).toBe(true);
