@@ -23,7 +23,8 @@ test("an account owner updates their profile and password without losing their s
   await page.getByLabel("Mot de passe", { exact: true }).fill(initialPassword);
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL("/");
-  await page.getByRole("link", { name: "Mon compte", exact: true }).click();
+  await page.getByRole("button", { name: "Menu du compte" }).click();
+  await page.getByRole("menuitem", { name: "Mon compte" }).click();
   await expect(page).toHaveURL("/account");
   await expect(
     page.getByRole("heading", { name: "Mon compte", level: 1 }),
@@ -47,6 +48,9 @@ test("an account owner updates their profile and password without losing their s
   await expect(
     page.getByText("Bonjour Compte modifié", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Menu du compte" })).toHaveText(
+    "CM",
+  );
 
   await page.reload();
   await expect(page).toHaveURL("/account");
@@ -85,7 +89,8 @@ test("an account owner updates their profile and password without losing their s
   await expect(replacementPassword).toHaveValue("");
   await expect(page).toHaveURL("/account");
 
-  await page.getByRole("button", { name: /déconnecter/ }).click();
+  await page.getByRole("button", { name: "Menu du compte" }).click();
+  await page.getByRole("menuitem", { name: "Se déconnecter" }).click();
   await expect(page).toHaveURL("/login");
   await page
     .getByRole("textbox", { name: "E-mail", exact: true })
@@ -101,7 +106,8 @@ test("an account owner updates their profile and password without losing their s
   await page.getByLabel("Mot de passe", { exact: true }).fill(newPassword);
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL("/");
-  await page.getByRole("link", { name: "Mon compte", exact: true }).click();
+  await page.getByRole("button", { name: "Menu du compte" }).click();
+  await page.getByRole("menuitem", { name: "Mon compte" }).click();
   await expect(name).toHaveValue("Compte modifié");
   await expect(profileEmail).toHaveValue(updatedEmail);
 });

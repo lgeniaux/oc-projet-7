@@ -34,7 +34,7 @@ Le formatage est assuré par `npm run format` (Prettier et tri des classes Tailw
 
 - `src/app` : routes et layout Next.js ;
 - `src/modules` : fonctionnalités métier, dont les formulaires, la session de l'onglet, le shell de l'application et le transport des appels Express authentifiés ;
-- `src/components/ui` : primitives shadcn/ui adaptées à Abricot (`Button`, `Input`, `Label`) ;
+- `src/components/ui` : primitives shadcn/ui adaptées à Abricot (`Button`, `Input`, `Label`, `DropdownMenu`) ;
 - `src/lib` : utilitaires transversaux ;
 - `public` : logos officiels SVG clair et blanc issus des maquettes ;
 - `tests/unit`, `tests/component`, `tests/e2e` : tests séparés du code applicatif.
