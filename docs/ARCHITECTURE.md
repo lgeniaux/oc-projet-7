@@ -125,7 +125,7 @@ Une incohérence entre sujet, maquette et backend n'est jamais résolue implicit
 4. les solutions possibles ;
 5. la décision à prendre.
 
-La décision durable peut ensuite être consignée dans un ADR.
+La décision est ensuite consignée dans le registre [`ecarts-et-decisions.md`](ecarts-et-decisions.md), dans le même changement ; une décision durable d'architecture fait aussi l'objet d'un ADR.
 
 ## Hors périmètre initial
 
