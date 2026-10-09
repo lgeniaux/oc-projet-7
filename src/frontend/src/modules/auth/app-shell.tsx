@@ -11,8 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getInitials } from "@/lib/get-initials";
 import { AppQueryProvider } from "@/modules/auth/app-query-provider";
-import { useProfileQuery, type Profile } from "@/modules/auth/profile-query";
+import { useProfileQuery } from "@/modules/auth/profile-query";
 import {
   clearAuthToken,
   getLoginDestination,
@@ -24,19 +25,6 @@ const navigation = [
   { href: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/projects", label: "Projets", icon: FolderOpen },
 ];
-
-/**
- * Build the avatar initials from the real profile.
- * @param profile - The Express profile.
- * @returns The first letters of the first and last name words, or of the e-mail.
- */
-function getInitials(profile: Profile) {
-  const words = profile.name?.trim().split(/\s+/).filter(Boolean) ?? [];
-  if (words.length === 0) return profile.email.charAt(0).toUpperCase();
-  const first = words[0].charAt(0);
-  const last = words.length > 1 ? words[words.length - 1].charAt(0) : "";
-  return `${first}${last}`.toUpperCase();
-}
 
 /**
  * Hide the app pages until the browser reads the tab token.
