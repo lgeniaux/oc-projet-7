@@ -8,6 +8,7 @@ export const profileResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
     user: z.object({
+      id: z.string(),
       email: z.string(),
       name: z.string().nullable().optional(),
     }),

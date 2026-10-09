@@ -15,7 +15,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 const apiFetch = vi.fn<typeof fetch>();
-const profile = { name: "Alice Martin", email: "alice@example.com" };
+const profile = {
+  id: "alice",
+  name: "Alice Martin",
+  email: "alice@example.com",
+};
 const profileSuccess = "Vos informations ont été mises à jour.";
 const passwordSuccess = "Votre mot de passe a été modifié.";
 
@@ -38,6 +42,7 @@ describe("account profile form", () => {
   it("shares one initial profile request and refreshes the shell identity after an update", async () => {
     const user = userEvent.setup();
     const updatedProfile = {
+      id: profile.id,
       name: "Alice Dupont",
       email: "updated@example.com",
     };
@@ -85,7 +90,10 @@ describe("account profile form", () => {
       new URL("http://localhost:8000/auth/profile"),
       expect.objectContaining({
         method: "PUT",
-        body: JSON.stringify(updatedProfile),
+        body: JSON.stringify({
+          name: updatedProfile.name,
+          email: updatedProfile.email,
+        }),
       }),
     );
     const headers = apiFetch.mock.calls[1][1]?.headers as Headers;
@@ -133,7 +141,7 @@ describe("account profile form", () => {
 
   it("omits an unchanged nullable name instead of sending an invalid empty name", async () => {
     const user = userEvent.setup();
-    const unnamedProfile = { name: null, email: profile.email };
+    const unnamedProfile = { id: profile.id, name: null, email: profile.email };
     apiFetch.mockResolvedValueOnce(
       Response.json({ success: true, data: { user: unnamedProfile } }),
     );

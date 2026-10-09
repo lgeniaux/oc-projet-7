@@ -138,3 +138,74 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 - **Référence** : polices confirmées par le porteur du projet.
 - **Décision** : chargement via `@fontsource`, sans requête vers un service externe.
+
+## Projets accessibles
+
+### D14 — Une lecture des tâches par carte pour la progression (Choix + Backend, #7)
+
+- **Référence** : `src/backend/src/controllers/projectController.ts` (`getProjects`) ; réponses réelles `GET /projects` et `GET /projects/:id/tasks`.
+- **Décision** : TanStack Query lit la liste sous `['projects']` puis les tâches de chaque projet sous `['projects', id, 'tasks']`, via le transport authentifié et avec validation Zod.
+- **Justification** : `_count.tasks` indique seulement le nombre total de tâches ; aucun compteur terminé n'est fourni. Ce coût N+1 est assumé pour une progression réelle, sans donnée fictive ni modification du backend. Chaque progression a son propre chargement et sa propre erreur ; les autres informations et le lien restent disponibles.
+- **Alternative** : ajouter ultérieurement des compteurs agrégés au contrat backend réduirait le volume et le nombre de requêtes, mais exigerait une décision explicite.
+- **Détails** : [architecture](ARCHITECTURE.md#projets-accessibles).
+
+### D15 — Tâches annulées exclues de la progression (Choix, #7)
+
+- **Référence** : `src/backend/prisma/schema.prisma`, statuts `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED` ; maquette `Projets.png` (pourcentage et tâches terminées).
+- **Décision** : progression = tâches `DONE` / tâches non `CANCELLED`, pourcentage arrondi à l'entier le plus proche. Zéro tâche éligible donne 0 % et « Aucune tâche ».
+- **Justification** : une tâche annulée n'est plus un travail à terminer. Utiliser `_count.tasks` comme total empêcherait certains projets d'atteindre 100 %. Une fonction pure et ses tests rendent cette règle explicite.
+
+### D16 — Création absente jusqu'au ticket dédié (Maquette, #7)
+
+- **Référence** : `sujet/maquette/Projets.png`, bouton « + Créer un projet » ; ticket #8.
+- **Décision** : ne pas afficher le bouton de création dans #7. L'état vide explique que les projets apparaissent quand le lecteur en crée un ou est ajouté comme contributeur.
+- **Justification** : la création appartient au ticket #8 ; un bouton inactif ou une fausse action serait trompeur. Le critère « action adaptée » du ticket est donc satisfait par une explication des conditions d'accès, sans action de création tant qu'elle n'existe pas.
+
+### D17 — Détail limité aux informations du projet (Maquette, #7)
+
+- **Référence** : `sujet/maquette/Single projet.png` ; tickets #9 et #10.
+- **Décision** : chaque carte ouvre `/projects/[id]` avec le nom, la description et le retour « Mes projets ». Un texte annonce honnêtement que les vues de tâches arriveront au ticket #10.
+- **Justification** : #7 garantit l'ouverture autorisée ; gestion du projet et vues de tâches sont des fonctionnalités distinctes. Aucun contrôle de modification, création de tâche ou IA ni contenu de tâche fictif n'est ajouté.
+
+### D18 — Équipe accessible et rôle du lecteur explicite (Maquette + Choix, #7)
+
+- **Référence** : `Projets.png` (initiales, badge « Propriétaire », « Équipe (3) ») ; `GET /projects` (`owner`, `members`, `userRole`).
+- **Décision** : l'équipe compte le propriétaire plus les membres, dans cet ordre. Chaque avatar possède un nom accessible et un titre avec le nom ou l'e-mail de la personne et son rôle ; les initiales sont décoratives. Le lecteur voit son rôle, avec comparaison de `data.user.id` du profil à `owner.id` pour distinguer propriétaire et membre `ADMIN`. Cet identifiant stable évite une mauvaise classification après un changement d'e-mail pendant la durée du cache.
+- **Justification** : le propriétaire n'est pas dans `members` et `ADMIN` ne signifie pas toujours propriétaire. La couleur seule ou des initiales seules ne distinguent pas suffisamment les personnes et permissions.
+- **Détails** : la fonction d'initiales existante est partagée entre shell et cartes à ce deuxième usage réel, sans seconde convention.
+
+### D19 — Primitives et contraste des cartes Abricot (Choix + Maquette, #7)
+
+- **Statut** : remplacée par D21 pour le badge propriétaire ; l'adaptation des primitives et des tokens reste applicable.
+- **Référence** : `Projets.png`, règle shadcn/ui du projet ; tokens de `DESIGN.md` et `src/frontend/src/app/globals.css`.
+- **Décision** : ajouter seulement `Avatar`/`AvatarFallback`, `Badge` et `Progress`, adaptés aux tokens Abricot et au `cn` local. Les badges utilisent le fond `brand-soft` (`#FFE8D9`) et le texte `link` (`#AD4706`), pas l'orange brut.
+- **Justification** : réutiliser les comportements accessibles de Radix et les dépendances existantes sans thème générique ni paquet supplémentaire. Le texte orange brut n'atteint pas AA ; le token `link` sur `brand-soft` atteint 4,84:1 (calcul de luminance WCAG), au-dessus du seuil AA de 4,5:1. La barre a un nom accessible ; le pourcentage et le compte de tâches ne reposent pas sur la couleur.
+
+### D20 — Grille responsive et carte à lien unique (Choix, #7)
+
+- **Référence** : `Projets.png`, grille desktop à trois colonnes et intervalles proches de 16 px.
+- **Décision** : une colonne mobile, deux à 768 px, trois à 1024 px ; chaque carte est un seul lien nommé par son `h2`, sans interaction imbriquée et avec un focus clavier visible.
+- **Justification** : conserver la hiérarchie de la maquette et l'ordre de lecture sans débordement horizontal, tout en donnant la même ouverture au clavier et au pointeur.
+
+### B06 — Projet inexistant et projet inaccessible renvoyés en `403` (Backend, #7)
+
+- **Référence** : `src/backend/src/controllers/projectController.ts:341-345` (contrôle d'accès avant lecture), `:391-394` (branche `404`) ; `src/backend/src/utils/permissions.ts` (`hasProjectAccess`). API réelle : Alice reçoit `403 FORBIDDEN` pour `/projects/nonexistent-project` et pour un projet réel accessible à Bob mais pas à Alice (« Dashboard Analytics »).
+- **Impact** : le frontend ne peut pas déterminer si un projet refusé existe. Le `404` du contrôleur ne couvre pas normalement un identifiant déjà absent au contrôle d'accès.
+- **Décision** : backend inchangé. Pour `403` comme `404`, afficher « Ce projet n'existe pas ou vous n'y avez pas accès. » avec le retour « Mes projets ».
+- **Justification** : message fidèle à l'information disponible, qui évite aussi de révéler l'existence d'un projet.
+- **Options** : conserver ce refus neutre (choix retenu) ; ou modifier ultérieurement l'ordre des contrôles backend pour un `404` distinct, au prix d'une information d'existence supplémentaire et d'un changement de contrat.
+
+### D21 — Repère propriétaire compact sans gros badge (Maquette, #7)
+
+- **Statut** : complétée par D22 pour la hiérarchie visuelle et la position de la couronne.
+- **Référence** : `Projets.png`, gros badge « Propriétaire » ; demande explicite du porteur du projet pendant la réalisation du ticket.
+- **Décision** : remplacer le badge par une petite couronne `link` à côté de l'avatar propriétaire. Retirer la primitive `Badge`, devenue inutilisée. Le nom accessible et le titre de l'avatar conservent le nom réel et « Propriétaire » ; les autres avatars annoncent leur rôle.
+- **Justification** : simplifier l'équipe et réduire l'encombrement, tout en distinguant le propriétaire autrement que par la couleur (forme de couronne et rôle accessible). Les cartes conservent le texte « Votre rôle » pour le lecteur.
+- **Remplace** : D19 pour l'affichage du badge propriétaire.
+
+### D22 — Avatars des membres gris et couronne au-dessus du propriétaire (Maquette, #7)
+
+- **Référence** : demandes explicites du porteur du projet après simplification du badge (D21) ; `Projets.png` (avatars membres gris).
+- **Décision** : conserver l'avatar propriétaire en `brand-soft`, utiliser `border` (`#E5E7EB`) pour les avatars des autres membres et centrer la petite couronne `link` au-dessus de l'avatar propriétaire.
+- **Justification** : rendre la hiérarchie de l'équipe immédiatement lisible sans réintroduire le gros badge. La couronne et les rôles accessibles complètent la différence de couleur ; les initiales conservent le texte sombre.
+- **Complète** : D21.
