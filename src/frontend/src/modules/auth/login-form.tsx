@@ -45,7 +45,7 @@ export function LoginForm() {
         return;
       }
       await saveAuthToken(response);
-      router.replace("/dashboard");
+      router.replace("/");
     } catch {
       setServerError("La connexion est indisponible. Réessayez plus tard.");
     }

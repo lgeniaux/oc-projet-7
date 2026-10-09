@@ -49,7 +49,7 @@ export function RegisterForm() {
         return;
       }
       await saveAuthToken(response);
-      router.replace("/dashboard");
+      router.replace("/");
     } catch {
       setServerError("L'inscription est indisponible. Réessayez plus tard.");
     }
