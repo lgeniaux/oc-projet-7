@@ -157,6 +157,8 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 ### D16 — Création absente jusqu'au ticket dédié (Maquette, #7)
 
+- **Statut** : remplacée par D31 au ticket #8.
+
 - **Référence** : `sujet/maquette/Projets.png`, bouton « + Créer un projet » ; ticket #8.
 - **Décision** : ne pas afficher le bouton de création dans #7. L'état vide explique que les projets apparaissent quand le lecteur en crée un ou est ajouté comme contributeur.
 - **Justification** : la création appartient au ticket #8 ; un bouton inactif ou une fausse action serait trompeur. Le critère « action adaptée » du ticket est donc satisfait par une explication des conditions d'accès, sans action de création tant qu'elle n'existe pas.
@@ -209,3 +211,62 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Décision** : conserver l'avatar propriétaire en `brand-soft`, utiliser `border` (`#E5E7EB`) pour les avatars des autres membres et centrer la petite couronne `link` au-dessus de l'avatar propriétaire.
 - **Justification** : rendre la hiérarchie de l'équipe immédiatement lisible sans réintroduire le gros badge. La couronne et les rôles accessibles complètent la différence de couleur ; les initiales conservent le texte sombre.
 - **Complète** : D21.
+
+## Création d'un projet
+
+### D31 — Création depuis la liste et modale accessible (Maquette + Choix, #8)
+
+- **Référence** : `Projets.png`, `Dashboard.png`, `Modale création projet.png` ; périmètre explicite du ticket.
+- **Décision** : ajouter le bouton avec plus décoratif uniquement sur `/projects`, même si le dashboard possède également ce bouton dans sa maquette. Il reste disponible dans les états vide, chargement et erreur. La modale utilise `Dialog` shadcn/ui adapté à Abricot, avec fermeture X nommée en français, focus contenu, Échap, retour du focus et défilement interne responsive.
+- **Justification** : le parcours de liste permet immédiatement la création sans étendre le ticket au dashboard. Radix fournit les comportements clavier plutôt qu'un contrôle artisanal. Les primitives inutilisées du générateur et son import erroné `cn` sont retirés ; aucun paquet supplémentaire n'est conservé.
+- **Remplace** : D16.
+
+### D32 — Description facultative et limites réelles (Maquette + Backend, #8)
+
+- **Référence** : `Modale création projet.png` marque titre et description obligatoires ; `src/backend/src/utils/validation.ts:194-215`.
+- **Décision** : seul « Titre » porte un astérisque. Il contient entre 2 et 100 caractères après suppression des espaces de début et de fin ; la description est facultative et limitée à 500 caractères après la même normalisation. Une description vide est omise. `Textarea` shadcn/ui remplace le champ court de la maquette et permet une saisie multiligne.
+- **Justification** : ne pas imposer de contrainte métier absente d'Express ; rendre les limites visibles avant envoi et conserver une description lisible.
+
+### D33 — Recherche simple et liste de contributeurs (Maquette + Choix, #8)
+
+- **Référence** : dropdown de `Modale création projet.png` ; ticket #8 excluant une autocomplétion complexe ; `projectController.ts:717-770`.
+- **Décision** : champ de recherche par e-mail ou nom, délai de 300 ms, minimum deux caractères, clé `['users', 'search', query]`, cache frais 30 secondes, signal d'annulation et réponses validées par Zod. Liste de dix résultats maximum avec boutons « Ajouter » ; sélections avec boutons « Retirer ». Exclure le profil courant par identifiant et les personnes déjà choisies ; attendre le profil avant la recherche. Les résultats antérieurs ne restent pas affichés lors d'une nouvelle recherche ou d'une erreur.
+- **Justification** : conserver un parcours clavier simple sans combobox ni dépendance supplémentaire, tout en présentant aide, chargement, vide, erreur avec relance et compteur annoncé poliment. L'API inclut le lecteur dans les résultats : appel réel `query=alice` authentifié comme Alice.
+
+### D34 — Aucun choix de rôle à la création (Backend + Choix, #8)
+
+- **Référence** : `projectController.ts:113-118,160-165` ; spécifications fonctionnelles §2 ; gestion des membres au ticket #9.
+- **Décision** : Express définit le propriétaire à partir du JWT ; tous les membres choisis sont des contributeurs. L'interface l'explique, sans sélecteur `ADMIN`.
+- **Justification** : le corps de création n'accepte pas de rôle et impose `CONTRIBUTOR`. Ne pas proposer une permission impossible à enregistrer ; la gestion des rôles appartient à #9.
+
+### D35 — Validation explicite à la soumission (Maquette + Choix, #8)
+
+- **Référence** : bouton grisé à vide de `Modale création projet.png` ; exigences WCAG du sujet.
+- **Décision** : « Ajouter un projet » reste actif avant validation ; il est désactivé uniquement pendant l'envoi. Les champs sont également désactivés pendant l'envoi. Les erreurs sont françaises, annoncées et reliées aux champs ; le premier champ invalide reçoit le focus.
+- **Justification** : un bouton désactivé à vide n'explique pas les champs attendus aux utilisateurs clavier ou de lecteur d'écran. Les règles locales correspondent au contrat réel, Express restant l'autorité.
+
+### D36 — Convention de mutation existante conservée (Choix, #8)
+
+- **Référence** : ticket #8 (« mutation et invalidation TanStack Query ») ; `modules/account/profile-form.tsx` et architecture des formulaires.
+- **Décision** : conserver `handleSubmit` RHF → `authenticatedFetch` → validation Zod → `invalidateQueries({ queryKey: ['projects'] })`, avec erreurs locales et `isSubmitting`, sans ajouter `useMutation`.
+- **Justification** : une seule convention de soumission dans le projet ; TanStack Query conserve son rôle de lecture partagée et d'invalidation, sans doubler l'état RHF. Les erreurs `400` reconnues sont reliées au titre, à la description ou au sélecteur ; les erreurs génériques gardent le formulaire.
+
+### D37 — Confirmation sur la page et avertissement de membres (Choix, #8)
+
+- **Référence** : critères #8 (succès visible, liste actualisée sans rechargement) ; absence de toast dans le socle.
+- **Décision** : vider le formulaire, fermer la modale, rendre le focus au déclencheur et afficher « Projet « X » créé. » dans une région `role="status"`. Comparer les e-mails sélectionnés aux membres retournés et lister les absents sans annuler le succès. Une fermeture volontaire pendant l'envoi ne l'annule pas ; son état puis son résultat restent visibles sur la page et une nouvelle ouverture attend la fin de l'envoi.
+- **Justification** : confirmation persistante sans dépendance de toast, absence de fausse réussite d'association et absence de seconde création involontaire. L'invalidation de `['projects']` actualise la liste ; une panne de relecture ne transforme pas la création réussie en échec.
+
+### B09 — Contributeurs inconnus ou non créés ignorés silencieusement (Backend, #8)
+
+- **Référence** : `src/backend/src/controllers/projectController.ts:142-173` (sélection des e-mails existants, rôle imposé, erreurs de création de membres ignorées).
+- **Impact** : `201` ne garantit pas l'association de toutes les personnes demandées ; un e-mail inconnu est ignoré sans erreur. Une disparition ou modification du compte entre recherche et création reste possible.
+- **Décision** : backend inchangé. Envoyer uniquement les e-mails choisis dans les résultats réels, puis vérifier les membres retournés et afficher les e-mails manquants dans un avertissement non bloquant.
+- **Justification** : neutraliser l'erreur de saisie libre sans prétendre garantir l'atomicité qu'Express n'offre pas. Ni nouvelle tentative automatique, ni nouvelle création du projet.
+
+### B10 — Absence de `userRole` dans la réponse de création (Backend, #8)
+
+- **Référence** : `projectController.ts:175-209` ; schéma de lecture existant `modules/projects/project-query.ts`.
+- **Impact** : le schéma de lecture d'un projet exige `userRole`, mais `POST /projects` ne le renvoie pas.
+- **Décision** : dériver un schéma de création du schéma existant en omettant seulement `userRole` ; invalider les lectures au lieu d'inventer ce champ dans la réponse.
+- **Justification** : suivre le contrat réel sans modifier le backend ni assouplir les réponses de lecture.

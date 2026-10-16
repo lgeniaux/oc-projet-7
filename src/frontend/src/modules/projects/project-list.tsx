@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { getInitials } from "@/lib/get-initials";
 import { useProfileQuery } from "@/modules/auth/profile-query";
+import { ProjectCreation } from "@/modules/projects/project-creation";
 import { getProjectProgress } from "@/modules/projects/project-progress";
 import {
   type Project,
@@ -15,6 +16,15 @@ import {
 } from "@/modules/projects/project-query";
 
 export function ProjectList() {
+  return (
+    <div className="mt-4">
+      <ProjectCreation />
+      <ProjectListContent />
+    </div>
+  );
+}
+
+function ProjectListContent() {
   const projects = useProjectsQuery();
   const profile = useProfileQuery();
 
@@ -44,7 +54,7 @@ export function ProjectList() {
   }
 
   return (
-    <div className="mt-8 space-y-4 sm:mt-12">
+    <div className="space-y-4 sm:mt-12">
       {projects.isError && (
         <div className="space-y-4">
           <p role="alert" className="text-link">
