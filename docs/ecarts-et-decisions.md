@@ -69,6 +69,12 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Décision** : retirer « Bonjour … » du shell, qui l'affichait sur toutes les pages. Le tableau de bord affiche la phrase de la maquette sous son titre ; sans nom, « Voici un aperçu de vos projets et tâches ».
 - **Justification** : suivre les maquettes ; une salutation répétée sur chaque page n'apporte pas d'information.
 
+### D30 — Curseur main sur tous les contrôles cliquables (Choix, #10)
+
+- **Référence** : recette du porteur du projet (dépliage des commentaires, menu de l'avatar) ; Tailwind 4 garde le curseur par défaut sur les boutons.
+- **Décision** : une règle de base dans `globals.css` applique `cursor: pointer` à `button` et `[role="button"]` actifs.
+- **Justification** : retour visuel attendu par la souris, sans répéter une classe sur chaque composant ; les états désactivés gardent leur curseur dédié.
+
 ## Inscription et connexion
 
 ### D10 — Champ « Nom » obligatoire à l'inscription (Maquette + Backend, #4)
