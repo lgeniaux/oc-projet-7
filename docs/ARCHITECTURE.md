@@ -91,10 +91,22 @@ Express renvoie `401` et le code `INVALID_CURRENT_PASSWORD` lorsque le mot de pa
 - `GET /projects` fournit `_count.tasks`, mais aucun nombre de tâches terminées. Chaque carte lance donc une requête de tâches indépendante : coût **N+1** (une liste et N listes de tâches, avec leur contenu complet) imposé par le contrat actuel. Le cache mutualise chaque clé, mais ne supprime pas ce coût initial. Une erreur de progression ne masque ni le nom, ni l'équipe, ni le lien du projet. Une évolution vers des compteurs agrégés nécessiterait une décision backend.
 - La fonction pure `getProjectProgress` compte les tâches `DONE` et exclut `CANCELLED` du dénominateur. Le pourcentage est arrondi à l'entier le plus proche ; zéro tâche éligible donne 0 % et « Aucune tâche ». `_count.tasks` n'est pas utilisé comme dénominateur, car il comprend les tâches annulées.
 - `lib/get-initials.ts` est extrait au deuxième usage réel : shell et équipes des cartes partagent les premières lettres du premier et du dernier mot du nom, ou la première lettre de l'e-mail.
-- `/projects/[id]` attend les paramètres asynchrones de Next.js côté serveur, puis compose `ProjectDetails` côté client. Le détail présente seulement le nom et la description ; les vues de tâches relèvent du ticket #10. Aucun formulaire de création, modification ou contenu fictif n'est ajouté.
+- `/projects/[id]` attend les paramètres asynchrones de Next.js côté serveur, puis compose `ProjectDetails` côté client ; le détail et les tâches réelles sont décrits ci-dessous.
 - Le contrôle d'accès de `getProject` précède la recherche du projet : un identifiant inexistant retourne actuellement `403 FORBIDDEN`, comme un projet inaccessible. Pour `403` et `404`, le détail affiche « Ce projet n'existe pas ou vous n'y avez pas accès. » et un retour aux projets, sans révéler l'existence du projet. Les autres erreurs ont un état annoncé et une relance manuelle.
 
 Les choix et écarts du ticket #7 sont consignés dans le [registre unique](ecarts-et-decisions.md).
+
+### Détail d'un projet
+
+`ProjectDetails` conserve les états de lecture du projet et présente son nom, sa description et ses contributeurs. Le propriétaire est ajouté avant les membres, car Express ne le duplique pas dans `members`. Les noms sont visibles, avec l'e-mail comme repli pour un nom absent ; les initiales sont décoratives. Le lien serveur « Mes projets » reste disponible dans tous les états.
+
+Une fois le projet reçu, `ProjectTaskList` utilise la requête partagée `['projects', id, 'tasks']` : son échec ne masque pas les informations du projet. Les chargements, erreurs et relances restent locaux ; une actualisation échouée conserve les tâches précédentes et l'annonce explicitement. Une réponse mal formée produit une erreur, pas une liste vide artificielle. Le schéma Zod décrit les champs réellement consommés (titre, description nullable, statut, priorité, échéance nullable, assignations avec `user`, commentaires avec `author` et date), tout en tolérant les champs supplémentaires.
+
+`GET /projects/:id/tasks` renvoie déjà les commentaires complets, triés par date de création croissante. Les cartes affichent leur nombre et permettent de les déplier avec `Collapsible` shadcn/ui, en lecture seule ; aucun appel supplémentaire ni formulaire de commentaire n'est ajouté. Les tâches annulées restent visibles avec « Annulée », contrairement au calcul de progression qui les exclut de son dénominateur.
+
+Le backend trie les priorités stockées comme chaînes par ordre alphabétique décroissant, ce qui place `MEDIUM` avant `HIGH`. `sortProjectTasks` trie une copie des tâches selon `URGENT > HIGH > MEDIUM > LOW`, puis l'échéance croissante (valeurs nulles en dernier) ; les égalités gardent l'ordre reçu. Le cache partagé n'est pas modifié. `formatFrenchCalendarDate` étend l'utilitaire de date : il conserve le jour calendaire ISO renvoyé par l'API, le formate en UTC sans conversion au fuseau du navigateur et affiche toujours l'année. L'échéance nulle est explicitement annoncée.
+
+Les tests unitaires couvrent le tri et les limites de jour ; les tests de composants couvrent les états de tâches, les quatre statuts, l'ordre, les assignés et l'ouverture clavier des commentaires. Le parcours E2E ouvre le projet E-commerce du seed et vérifie ses tâches, statuts et échéances sans modifier les données. Les choix de périmètre et écarts backend sont consignés dans le registre (D23–D28, B07–B08). Le repère du propriétaire passe par le composant partagé `OwnerCrown` (cartes et détail).
 
 ## Données et formulaires
 

@@ -209,3 +209,57 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Décision** : conserver l'avatar propriétaire en `brand-soft`, utiliser `border` (`#E5E7EB`) pour les avatars des autres membres et centrer la petite couronne `link` au-dessus de l'avatar propriétaire.
 - **Justification** : rendre la hiérarchie de l'équipe immédiatement lisible sans réintroduire le gros badge. La couronne et les rôles accessibles complètent la différence de couleur ; les initiales conservent le texte sombre.
 - **Complète** : D21.
+
+## Détail d'un projet
+
+### D23 — Consultation sans actions hors périmètre (Maquette + Choix, #10)
+
+- **Référence** : `Single projet.png` ; tickets #9, #11, #12 et #16 ; ticket #10 excluant recherche et filtres.
+- **Décision** : afficher l'en-tête, les contributeurs et les tâches réelles avec commentaires dépliables en lecture seule. Ne pas afficher « Modifier », « Créer une tâche », « IA », le menu « … », Liste/Calendrier, le filtre Statut, la recherche ni l'ajout de commentaire.
+- **Justification** : ces contrôles relèvent d'autres tickets ou sont hors périmètre ; une action fictive ou désactivée donnerait une promesse trompeuse. Le dépliage donne accès au détail utile déjà reçu, sans route de tâche inventée.
+- **Remplace** : D17 pour le détail minimal du ticket #7.
+
+### D24 — Jour calendaire conservé et année toujours visible (Choix + Maquette, #10)
+
+- **Référence** : `Single projet.png` (« 9 mars ») ; `Task.dueDate` (`DateTime?`) et réponses ISO d'Express, dont les échéances du seed en 2024.
+- **Décision** : formater le jour calendaire transmis par l'API, sans conversion au fuseau du navigateur, avec mois français et année systématique. L'absence d'échéance affiche « Aucune échéance ». Les dates des commentaires suivent le même affichage de jour.
+- **Justification** : éviter le recul de date d'une échéance à minuit UTC pour un utilisateur à l'ouest d'UTC ; l'année évite de faire passer les tâches anciennes pour des échéances de l'année courante. L'utilitaire existant est étendu et les limites de jour sont testées.
+
+### D25 — Commentaires réels dans un dépliable accessible (Choix, #10)
+
+- **Référence** : `taskController.ts:274-285`, `taskComments.ts:8-29` ; `Single projet.png`, ligne « Commentaires (n) ».
+- **Décision** : compter le tableau `comments` reçu et afficher ses auteurs, dates et contenus via `Collapsible` shadcn/ui ajouté par le CLI. Conserver l'ordre chronologique du backend et afficher « Aucun commentaire. » si vide.
+- **Justification** : la réponse contient déjà les commentaires complets ; aucun appel supplémentaire, faux contenu, commentaire modifiable ou compteur estimé n'est nécessaire. Radix gère le clavier et `aria-expanded` ; les noms sont visibles, les initiales décoratives.
+
+### D26 — Contributeurs nommés et cartes sur une colonne (Maquette + Choix, #10)
+
+- **Référence** : `Single projet.png` (barre de contributeurs et cartes empilées) ; réponse `getProject`, propriétaire séparé des membres.
+- **Décision** : compter le propriétaire et les membres, afficher le propriétaire en premier avec son nom et la couronne de D28, puis les noms ou e-mails des membres. Garder les tâches sur une seule colonne à toutes les tailles ; les noms et métadonnées peuvent se replier.
+- **Justification** : la barre du détail est plus informative que les avatars compacts des cartes de projets. Aucun nom ou rôle propriétaire n'est déduit du statut `ADMIN`. Les listes sémantiques et titres `h1/h2/h3` conservent un ordre de lecture accessible sans largeur fixe.
+
+### D27 — Badges de statut en couleurs contrastées (Maquette + Choix, #10)
+
+- **Référence** : `Single projet.png` (rose, ambre et vert) ; WCAG 2.1 AA ; `DESIGN.md`.
+- **Décision** : normaliser les tokens texte/fond des trois statuts obligatoires ; afficher « À faire », « En cours », « Terminée » avec contraste respectif 6,68:1, 6,15:1 et 6,49:1. « Annulée » reste neutre (`text` sur `border`, 13,31:1).
+- **Justification** : conserver les familles visuelles sans reproduire des textes pastel peu lisibles ; chaque statut est textuel, jamais communiqué par sa seule couleur.
+
+### D28 — Couronne propriétaire dans toutes les vues (Maquette, #10)
+
+- **Référence** : `Single projet.png` et `Projets.png` (badge « Propriétaire ») ; D21–D22 ; demande du porteur du projet après la recette du détail.
+- **Décision** : le badge texte « Propriétaire » de la barre de contributeurs est remplacé par la couronne des cartes de projets. Cette règle s'applique à toutes les vues, présentes et futures : composant partagé `OwnerCrown`, rôle donné en texte accessible (`sr-only` dans le détail).
+- **Justification** : un seul repère visuel du propriétaire dans toute l'application ; la règle est inscrite dans `DESIGN.md` pour les tickets suivants.
+- **Complète** : D21–D22 ; **modifie** : D26.
+
+### B07 — Tri alphabétique des priorités backend (Backend, #10)
+
+- **Référence** : `src/backend/src/controllers/taskController.ts:254-271`, `src/backend/prisma/schema.prisma:66-68`. Réponse réelle `GET /projects/:id/tasks` du projet E-commerce : `MEDIUM` avant `HIGH`.
+- **Impact** : le tri décroissant de la chaîne `priority`, puis de `createdAt`, ne correspond pas à « Par ordre de priorité » au sens métier.
+- **Décision** : backend inchangé ; trier côté client une copie selon `URGENT > HIGH > MEDIUM > LOW`, puis par échéance croissante, valeurs nulles en dernier ; conserver l'ordre reçu en cas d'égalité. Sous-titre : « Par ordre de priorité, puis d’échéance ».
+- **Justification** : ordre explicite et testé, sans mutation du cache partagé avec la progression des projets. Aucun filtre ne masque les tâches.
+
+### B08 — Statut supplémentaire `CANCELLED` conservé (Backend + Sujet, #10)
+
+- **Référence** : `src/backend/prisma/schema.prisma:66`, `src/backend/src/utils/validation.ts` ; le sujet ne cite que « À faire », « En cours » et « Terminée ».
+- **Impact** : masquer ou transformer les tâches annulées ferait perdre une information réelle du projet.
+- **Décision** : backend inchangé ; afficher toutes les tâches `CANCELLED` avec le badge neutre « Annulée », au même endroit dans le tri que les autres tâches. La progression conserve sa règle distincte D15.
+- **Justification** : décision conservatrice demandée par le porteur du projet : exposer les données réelles sans inventer une correspondance avec un des trois statuts obligatoires.

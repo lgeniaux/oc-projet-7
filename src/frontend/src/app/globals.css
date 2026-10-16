@@ -15,6 +15,12 @@
   --action: #1f1f1f;
   --action-hover: #0f0f0f;
   --on-action: #ffffff;
+  --status-todo: #9f1239;
+  --status-todo-soft: #ffe4e6;
+  --status-progress: #854d0e;
+  --status-progress-soft: #fef3c7;
+  --status-done: #166534;
+  --status-done-soft: #dcfce7;
   --abricot-radius-sm: 8px;
   --abricot-radius-md: 10px;
 }
@@ -33,6 +39,12 @@
   --color-action: var(--action);
   --color-action-hover: var(--action-hover);
   --color-on-action: var(--on-action);
+  --color-status-todo: var(--status-todo);
+  --color-status-todo-soft: var(--status-todo-soft);
+  --color-status-progress: var(--status-progress);
+  --color-status-progress-soft: var(--status-progress-soft);
+  --color-status-done: var(--status-done);
+  --color-status-done-soft: var(--status-done-soft);
   --radius-sm: var(--abricot-radius-sm);
   --radius-md: var(--abricot-radius-md);
 }
