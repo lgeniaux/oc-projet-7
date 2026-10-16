@@ -63,6 +63,12 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Décision** : l'orange de marque reste réservé aux pictogrammes et accents ; les textes orange utilisent `#AD4706`.
 - **Justification** : `#D3590B` atteint 4,04:1 sur blanc, insuffisant pour du texte normal (AA 4,5:1).
 
+### D29 — Salutation seulement sur le tableau de bord (Maquette, #10)
+
+- **Référence** : `Dashboard.png` (« Bonjour Alice Dupont, voici un aperçu de vos projets et tâches » sous le titre) ; autres maquettes sans salutation ; recette du porteur du projet.
+- **Décision** : retirer « Bonjour … » du shell, qui l'affichait sur toutes les pages. Le tableau de bord affiche la phrase de la maquette sous son titre ; sans nom, « Voici un aperçu de vos projets et tâches ».
+- **Justification** : suivre les maquettes ; une salutation répétée sur chaque page n'apporte pas d'information.
+
 ## Inscription et connexion
 
 ### D10 — Champ « Nom » obligatoire à l'inscription (Maquette + Backend, #4)

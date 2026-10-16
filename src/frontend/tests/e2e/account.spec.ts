@@ -45,9 +45,6 @@ test("an account owner updates their profile and password without losing their s
       .getByRole("status")
       .filter({ hasText: "Vos informations ont été mises à jour." }),
   ).toBeVisible();
-  await expect(
-    page.getByText("Bonjour Compte modifié", { exact: true }),
-  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Menu du compte" })).toHaveText(
     "CM",
   );
