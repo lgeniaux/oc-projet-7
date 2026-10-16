@@ -159,7 +159,7 @@ describe("project list", () => {
     expect(await screen.findByText(/pas encore de projet/i)).toBeVisible();
   });
 
-  it("explains an empty list without offering an unimplemented creation action", async () => {
+  it("explains an empty list and offers project creation", async () => {
     mockListRequests([]);
     renderList();
 
@@ -167,11 +167,8 @@ describe("project list", () => {
     expect(screen.getByText(/créerez/i)).toHaveTextContent(/contributeur/i);
     expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /créer|nouveau|ajouter/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: /créer|nouveau|ajouter/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: "Créer un projet" }),
+    ).toBeVisible();
   });
 
   it("reports a failed list and retries without losing the tab session", async () => {
