@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, UsersRound } from "lucide-react";
+import { UsersRound } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { getInitials } from "@/lib/get-initials";
 import { useProfileQuery } from "@/modules/auth/profile-query";
 import { ProjectCreation } from "@/modules/projects/project-creation";
+import { OwnerCrown } from "@/modules/projects/owner-crown";
 import { getProjectProgress } from "@/modules/projects/project-progress";
 import {
   type Project,
@@ -157,10 +158,7 @@ function ProjectCard({
                 <span aria-hidden="true">{getInitials(project.owner)}</span>
               </AvatarFallback>
             </Avatar>
-            <Crown
-              aria-hidden="true"
-              className="absolute -top-4 left-1/2 size-3.5 -translate-x-1/2 text-link"
-            />
+            <OwnerCrown />
           </span>
           {project.members.map((member) => {
             const memberName = member.user.name?.trim() || member.user.email;

@@ -69,7 +69,8 @@ describe("account profile form", () => {
     const email = screen.getByRole("textbox", { name: "E-mail" });
     expect(name).toHaveValue(profile.name);
     expect(email).toHaveValue(profile.email);
-    await screen.findByText(/Bonjour Alice Martin/);
+    const accountMenu = screen.getByRole("button", { name: "Menu du compte" });
+    await waitFor(() => expect(accountMenu).toHaveTextContent("AM"));
     expect(apiFetch).toHaveBeenCalledTimes(1);
     await user.clear(name);
     await user.type(name, "  Alice Dupont  ");
@@ -83,7 +84,7 @@ describe("account profile form", () => {
       "role",
       "status",
     );
-    await screen.findByText(/Bonjour Alice Dupont/);
+    await waitFor(() => expect(accountMenu).toHaveTextContent("AD"));
     await waitFor(() => expect(apiFetch).toHaveBeenCalledTimes(3));
     expect(apiFetch).toHaveBeenNthCalledWith(
       2,

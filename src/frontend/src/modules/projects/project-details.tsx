@@ -1,6 +1,10 @@
 "use client";
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/lib/get-initials";
+import { OwnerCrown } from "@/modules/projects/owner-crown";
+import { ProjectTaskList } from "@/modules/projects/project-task-list";
 import {
   ProjectRequestError,
   useProjectQuery,
@@ -80,9 +84,58 @@ export function ProjectDetails({ projectId }: { projectId: string }) {
           </Button>
         </div>
       )}
-      <p className="mt-8 rounded-md border border-border bg-surface p-6 text-muted">
-        La consultation des tâches de ce projet sera disponible prochainement.
-      </p>
+      <section
+        aria-labelledby="project-contributors-heading"
+        className="mt-8 flex min-w-0 flex-wrap items-center justify-between gap-6 rounded-md bg-border/30 p-4 sm:px-6"
+      >
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h2
+            id="project-contributors-heading"
+            className="font-heading text-lg font-semibold"
+          >
+            Contributeurs
+          </h2>
+          <p className="text-sm text-muted">
+            {project.data.members.length + 1}{" "}
+            {project.data.members.length === 0 ? "personne" : "personnes"}
+          </p>
+        </div>
+        <ul
+          aria-label="Contributeurs du projet"
+          className="flex min-w-0 flex-wrap gap-4"
+        >
+          {[
+            { user: project.data.owner, isOwner: true },
+            ...project.data.members.map(({ user }) => ({
+              user,
+              isOwner: false,
+            })),
+          ].map(({ user, isOwner }) => (
+            <li
+              key={user.id}
+              className="flex min-w-0 flex-wrap items-center gap-2 text-sm"
+            >
+              <span className="relative inline-flex">
+                <Avatar aria-hidden="true" className="size-7">
+                  <AvatarFallback
+                    className={
+                      isOwner ? "bg-brand-soft text-xs" : "bg-border text-xs"
+                    }
+                  >
+                    {getInitials(user)}
+                  </AvatarFallback>
+                </Avatar>
+                {isOwner && <OwnerCrown />}
+              </span>
+              <span className="min-w-0 wrap-anywhere">
+                {user.name || user.email}
+                {isOwner && <span className="sr-only">, Propriétaire</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <ProjectTaskList projectId={projectId} />
     </div>
   );
 }

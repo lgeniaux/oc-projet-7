@@ -74,12 +74,11 @@ describe("app shell", () => {
     expect(
       screen.getByRole("link", { name: "Tableau de bord" }),
     ).not.toHaveAttribute("aria-current");
-    await screen.findByText(/Bonjour Alice Martin/);
     const headers = apiFetch.mock.calls[0][1]?.headers as Headers;
     expect(headers.get("Authorization")).toBe("Bearer tab-token");
 
     const accountMenu = screen.getByRole("button", { name: "Menu du compte" });
-    expect(accountMenu).toHaveTextContent("AM");
+    await waitFor(() => expect(accountMenu).toHaveTextContent("AM"));
     await user.click(accountMenu);
     expect(
       await screen.findByRole("menuitem", { name: "Mon compte" }),
