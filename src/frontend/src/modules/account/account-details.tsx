@@ -34,8 +34,8 @@ export function AccountDetails() {
     <div className="mt-8 space-y-10">
       {profile.isError && (
         <p role="alert" className="text-link">
-          L&apos;actualisation de vos informations est indisponible. Vos dernières
-          informations restent affichées.
+          L&apos;actualisation de vos informations est indisponible. Vos
+          dernières informations restent affichées.
         </p>
       )}
       <ProfileForm profile={profile.data} />

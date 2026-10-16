@@ -19,7 +19,10 @@ export default async function LoginPage({
       alternateHref="/register"
     >
       {reason === "session-expired" && (
-        <p role="status" className="mb-6 rounded-sm border border-border bg-surface p-4 text-sm">
+        <p
+          role="status"
+          className="mb-6 rounded-sm border border-border bg-surface p-4 text-sm"
+        >
           Votre session a expiré. Connectez-vous à nouveau pour continuer.
         </p>
       )}
