@@ -31,7 +31,25 @@ const projectSchema = z.object({
 
 const projectTaskSchema = z.object({
   id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
   status: z.enum(["TODO", "IN_PROGRESS", "DONE", "CANCELLED"]),
+  priority: z.enum(["URGENT", "HIGH", "MEDIUM", "LOW"]),
+  dueDate: z.iso.datetime({ offset: true }).nullable(),
+  assignees: z.array(
+    z.object({
+      id: z.string(),
+      user: projectUserSchema,
+    }),
+  ),
+  comments: z.array(
+    z.object({
+      id: z.string(),
+      content: z.string(),
+      createdAt: z.iso.datetime({ offset: true }),
+      author: projectUserSchema,
+    }),
+  ),
 });
 
 export const projectsResponseSchema = z.object({

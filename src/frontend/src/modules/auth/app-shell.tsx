@@ -154,9 +154,6 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         tabIndex={-1}
         className="mx-auto w-full max-w-7xl flex-1 px-6 py-10 focus-visible:outline-2 focus-visible:outline-link sm:px-10 sm:py-14"
       >
-        {profile.data?.name && (
-          <p className="mb-4 text-sm text-muted">Bonjour {profile.data.name}</p>
-        )}
         {profile.isError && (
           <p role="status" className="mb-4 text-sm text-muted">
             Votre profil est indisponible pour le moment. Réessayez plus tard.

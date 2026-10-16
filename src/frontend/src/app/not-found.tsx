@@ -6,7 +6,9 @@ export default function NotFound() {
     <main className="mx-auto flex min-h-screen max-w-xl flex-col items-start justify-center px-6 py-12">
       <Image src="/abricot-logo.svg" alt="Abricot" width={147} height={19} />
       <p className="mt-12 font-heading text-5xl font-semibold text-link">404</p>
-      <h1 className="mt-4 font-heading text-2xl font-semibold">Page introuvable</h1>
+      <h1 className="mt-4 font-heading text-2xl font-semibold">
+        Page introuvable
+      </h1>
       <p className="mt-4 text-muted">
         Cette page n’existe pas ou n’est plus disponible.
       </p>

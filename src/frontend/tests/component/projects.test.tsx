@@ -49,13 +49,28 @@ function projectsResponse(projects: Project[]) {
   return Response.json({ success: true, data: { projects } });
 }
 
-function tasksResponse(tasks: ProjectTask[]) {
-  return Response.json({ success: true, data: { tasks } });
+type TaskFixture = Pick<ProjectTask, "id" | "status"> & Partial<ProjectTask>;
+
+function tasksResponse(tasks: TaskFixture[]) {
+  return Response.json({
+    success: true,
+    data: {
+      tasks: tasks.map((task) => ({
+        title: "Task",
+        description: null,
+        priority: "MEDIUM",
+        dueDate: null,
+        assignees: [],
+        comments: [],
+        ...task,
+      })),
+    },
+  });
 }
 
 function mockListRequests(
   projects: Project[],
-  tasksByProject: Record<string, ProjectTask[]> = {},
+  tasksByProject: Record<string, TaskFixture[]> = {},
 ) {
   apiFetch.mockImplementation(async (input) => {
     const path = new URL(String(input)).pathname;
@@ -328,9 +343,10 @@ describe("project list", () => {
   });
 });
 
-describe("minimal project details", () => {
+describe("project details", () => {
   it("announces loading then displays the real project name and description", async () => {
     let resolveProject!: (response: Response) => void;
+    apiFetch.mockResolvedValue(tasksResponse([]));
     apiFetch.mockImplementationOnce(
       () =>
         new Promise<Response>((resolve) => {
@@ -352,7 +368,7 @@ describe("minimal project details", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByText(ownedProject.description)).toBeVisible();
     expect(
-      screen.getByText(/consultation des tâches.*prochainement/i),
+      await screen.findByText("Aucune tâche pour ce projet."),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: /créer|modifier|supprimer/i }),
@@ -384,6 +400,7 @@ describe("minimal project details", () => {
 
   it("retries a server failure and supports a project without a description", async () => {
     const user = userEvent.setup();
+    apiFetch.mockResolvedValue(tasksResponse([]));
     apiFetch
       .mockResolvedValueOnce(new Response(null, { status: 500 }))
       .mockResolvedValueOnce(
