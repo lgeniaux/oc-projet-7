@@ -15,6 +15,9 @@ import { clearAuthToken } from "@/modules/auth/session";
 import { ProjectDetails } from "@/modules/projects/project-details";
 import type { Project, ProjectTask } from "@/modules/projects/project-query";
 
+const { router } = vi.hoisted(() => ({ router: { replace: vi.fn() } }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 const apiFetch = vi.fn<typeof fetch>();
 const alice = {
   id: "alice",
@@ -52,6 +55,8 @@ function tasksResponse(tasks: ProjectTask[]) {
 function mockTaskRequests(respond: () => Response | Promise<Response>) {
   apiFetch.mockImplementation(async (input) => {
     const path = new URL(String(input)).pathname;
+    if (path === "/auth/profile")
+      return Response.json({ success: true, data: { user: alice } });
     if (path === `/projects/${project.id}`) {
       return Response.json({ success: true, data: { project } });
     }
@@ -99,6 +104,8 @@ describe("project tasks", () => {
     let resolveTasks!: (response: Response) => void;
     apiFetch.mockImplementation(async (input) => {
       const path = new URL(String(input)).pathname;
+      if (path === "/auth/profile")
+        return Response.json({ success: true, data: { user: alice } });
       if (path === `/projects/${project.id}`) {
         return new Promise<Response>((resolve) => {
           resolveProject = resolve;
@@ -114,7 +121,11 @@ describe("project tasks", () => {
     renderDetails();
 
     expect(screen.getByRole("status")).toHaveTextContent(/chargement.*projet/i);
-    expect(apiFetch).toHaveBeenCalledTimes(1);
+    expect(
+      apiFetch.mock.calls.filter(
+        ([input]) => new URL(String(input)).pathname !== "/auth/profile",
+      ),
+    ).toHaveLength(1);
     await act(async () => {
       resolveProject(Response.json({ success: true, data: { project } }));
     });

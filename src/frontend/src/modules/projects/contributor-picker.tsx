@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,17 @@ export function ContributorPicker({
   selected,
   onChange,
   error,
+  description,
+  ownerId,
 }: {
   selected: Contributor[];
   onChange: (contributors: Contributor[]) => void;
   error?: string;
+  description: string;
+  ownerId?: string;
 }) {
   const profile = useProfileQuery();
+  const searchId = useId();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const query = search.trim();
@@ -34,6 +39,7 @@ export function ContributorPicker({
   const results = (users.data ?? []).filter(
     (user) =>
       user.id !== profile.data?.id &&
+      user.id !== ownerId &&
       !selected.some((member) => member.id === user.id),
   );
   const isSearching = query.length >= 2;
@@ -42,23 +48,20 @@ export function ContributorPicker({
   return (
     <div className="space-y-3">
       <h3 className="font-medium">Contributeurs</h3>
-      <p className="text-sm text-muted">
-        Les personnes ajoutées auront le rôle de contributeur. Vous serez
-        propriétaire du projet.
-      </p>
-      <Label htmlFor="contributor-search">
+      <p className="text-sm text-muted">{description}</p>
+      <Label htmlFor={searchId}>
         Rechercher un contributeur par e-mail ou nom
       </Label>
       <Input
-        id="contributor-search"
+        id={searchId}
         type="search"
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        aria-describedby="contributor-search-status"
+        aria-describedby={`${searchId}-status`}
         autoComplete="off"
       />
       <div
-        id="contributor-search-status"
+        id={`${searchId}-status`}
         aria-live="polite"
         aria-atomic="true"
         className="text-sm text-muted"
@@ -150,17 +153,20 @@ export function ContributorPicker({
             >
               <span className="min-w-0 text-sm wrap-anywhere">
                 {user.name?.trim() || user.email} — {user.email}
+                {user.id === profile.data?.id && <span> (Vous)</span>}
               </span>
-              <Button
-                type="button"
-                variant="outline"
-                aria-label={`Retirer ${user.name?.trim() || user.email}`}
-                onClick={() =>
-                  onChange(selected.filter((member) => member.id !== user.id))
-                }
-              >
-                Retirer
-              </Button>
+              {user.id !== profile.data?.id && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label={`Retirer ${user.name?.trim() || user.email}`}
+                  onClick={() =>
+                    onChange(selected.filter((member) => member.id !== user.id))
+                  }
+                >
+                  Retirer
+                </Button>
+              )}
             </li>
           ))}
         </ul>

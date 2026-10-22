@@ -75,6 +75,22 @@ export const projectTasksResponseSchema = z.object({
 
 export type Project = z.infer<typeof projectSchema>;
 export type ProjectTask = z.infer<typeof projectTaskSchema>;
+export type ProjectViewerRole = "owner" | "admin" | "contributor";
+
+/**
+ * Distinguish the owner from ADMIN members by user id.
+ * @param project - A project read from the API.
+ * @param viewerId - The current profile id, if available.
+ * @returns The viewer role, or null until the profile is available.
+ */
+export function getProjectViewerRole(
+  project: Project,
+  viewerId: string | undefined,
+): ProjectViewerRole | null {
+  if (viewerId === undefined) return null;
+  if (viewerId === project.owner.id) return "owner";
+  return project.userRole === "ADMIN" ? "admin" : "contributor";
+}
 
 export class ProjectRequestError extends Error {
   readonly status: number;

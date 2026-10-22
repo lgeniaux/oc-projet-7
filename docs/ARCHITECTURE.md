@@ -120,6 +120,20 @@ Les tests unitaires couvrent le tri et les limites de jour ; les tests de compos
 
 Les tests de composants couvrent validation, recherche et relance, sélection/retrait, erreurs serveur avec conservation des champs, confirmation, invalidation réelle de liste, membres manquants et clavier de la modale. Le parcours Playwright crée un projet au nom unique avec Bob, le retrouve sans rechargement et ouvre son détail ; il modifie seulement un nouveau projet de test. Les décisions #8 sont consignées de D31 à D37 et B09 à B10 dans le registre.
 
+### Administration d'un projet
+
+`project-query.ts` expose `ProjectViewerRole` et `getProjectViewerRole`. L'identifiant du profil distingue le propriétaire d'un membre `ADMIN` ; sans profil, aucune action d'administration n'est affichée. La liste partage ce calcul pour son libellé de rôle. Le détail affiche « Modifier » au propriétaire et aux membres `ADMIN`, et la suppression au seul propriétaire. Le backend vérifie toujours les permissions.
+
+`ProjectEditing` reçoit le projet déjà chargé, `canDelete` et `onDeleted`. À l'ouverture, il copie les champs et les membres hors propriétaire dans le brouillon et sa référence. Il partage `ProjectFormFields` et son schéma Zod avec la création, sans partager leurs contrôleurs réseau. `ContributorPicker` reçoit le texte d'aide et l'identifiant du propriétaire, utilise `useId` et ne propose pas de retirer le lecteur. Chaque nouvel ajout reste `CONTRIBUTOR`, sans paramètre `role`.
+
+La soumission conserve RHF `handleSubmit` et `authenticatedFetch`, sans `useMutation`. Elle compare les membres par identifiant, en excluant le propriétaire et le lecteur des ajouts et retraits. Elle envoie un `PUT` seulement pour les champs modifiés, puis les ajouts et enfin les retraits, séquentiellement. Une description effacée est envoyée avec `""`, jamais `null`. Un refus des champs arrête la séquence ; une erreur d'autorisation sur un membre arrête les écritures restantes. Les réponses `401` laissent le transport et le shell gérer la déconnexion sans message local.
+
+Après une écriture, l'invalidation du préfixe `['projects']` actualise liste, détail et tâches. Une réussite ferme la modale et annonce « Projet modifié. ». Une erreur partielle conserve la modale et nomme chaque personne concernée, en précisant si les champs ont été enregistrés. La référence et la sélection sont remplacées par les membres du détail relu dans le cache, ou par la référence précédente en l'absence de donnée. La nouvelle tentative recalcule les changements, sans rollback ; `409 USER_ALREADY_MEMBER` est un succès et le retrait d'un non-membre est idempotent côté Express.
+
+La suppression utilise une zone séparée dans la modale et `AlertDialog` shadcn/ui. Avant le `DELETE`, le contrôleur annule les requêtes du détail et des tâches. Après succès, `ProjectDetails` affiche l'état supprimé et démonte son contenu, y compris les observateurs et les modales. Un effet annule de nouveau les requêtes, retire le préfixe `['projects', id]`, filtre la liste en cache, l'invalide exactement sans relecture et appelle `router.replace('/projects')`. Ces opérations supportent la double exécution des effets en StrictMode. Aucun observateur du projet supprimé ne déclenche ainsi de relecture refusée.
+
+Les tests de composants vérifient les permissions, les champs préremplis, les corps et l'ordre des écritures, les erreurs partielles et leur nouvelle tentative, les protections du propriétaire et du lecteur, ainsi que la confirmation et le nettoyage du cache après suppression. Playwright crée un projet jetable avec Bob, modifie son titre, efface sa description, remplace Bob par Caroline puis le supprime ; les projets du seed ne sont pas modifiés. Les limites backend et les décisions sont consignées en D38–D42 et B11–B14 dans le registre.
+
 ## Données et formulaires
 
 - `AppQueryProvider` (`modules/auth/app-query-provider.tsx`) fournit TanStack Query uniquement dans la branche authentifiée d'`AppShell`, après lecture du token. Le layout `app/(app)` reste serveur ; les pages publiques ne montent pas ce provider.

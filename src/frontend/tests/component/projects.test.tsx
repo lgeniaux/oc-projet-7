@@ -7,6 +7,9 @@ import { ProjectDetails } from "@/modules/projects/project-details";
 import { ProjectList } from "@/modules/projects/project-list";
 import type { Project, ProjectTask } from "@/modules/projects/project-query";
 
+const { router } = vi.hoisted(() => ({ router: { replace: vi.fn() } }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 const apiFetch = vi.fn<typeof fetch>();
 const alice = {
   id: "alice",
@@ -342,20 +345,19 @@ describe("project list", () => {
 
 describe("project details", () => {
   it("announces loading then displays the real project name and description", async () => {
-    let resolveProject!: (response: Response) => void;
-    apiFetch.mockResolvedValue(tasksResponse([]));
-    apiFetch.mockImplementationOnce(
-      () =>
-        new Promise<Response>((resolve) => {
-          resolveProject = resolve;
-        }),
-    );
+    const pending = Promise.withResolvers<Response>();
+    apiFetch.mockImplementation(async (input) => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/auth/profile") return profileResponse();
+      if (path.endsWith("/tasks")) return tasksResponse([]);
+      return pending.promise;
+    });
     renderDetails();
 
     expect(screen.getByRole("status")).toHaveTextContent(/chargement/i);
     expect(screen.queryByText(ownedProject.name)).not.toBeInTheDocument();
     await act(async () => {
-      resolveProject(
+      pending.resolve(
         Response.json({ success: true, data: { project: ownedProject } }),
       );
     });
@@ -367,20 +369,79 @@ describe("project details", () => {
     expect(
       await screen.findByText("Aucune tâche pour ce projet."),
     ).toBeVisible();
-    expect(
-      screen.queryByRole("button", { name: /créer|modifier|supprimer/i }),
-    ).not.toBeInTheDocument();
   });
+
+  it.each([
+    { viewer: alice, userRole: "ADMIN", editable: true, deletable: true },
+    { viewer: charlie, userRole: "ADMIN", editable: true, deletable: false },
+    { viewer: bob, userRole: "CONTRIBUTOR", editable: false, deletable: false },
+  ] as const)(
+    "shows only permitted actions for $viewer.id",
+    async ({ viewer, userRole, editable, deletable }) => {
+      apiFetch.mockImplementation(async (input) => {
+        const path = new URL(String(input)).pathname;
+        if (path === "/auth/profile")
+          return Response.json({ success: true, data: { user: viewer } });
+        if (path.endsWith("/tasks")) return tasksResponse([]);
+        return Response.json({
+          success: true,
+          data: { project: { ...ownedProject, userRole } },
+        });
+      });
+      renderDetails();
+      await screen.findByRole("heading", { level: 1, name: ownedProject.name });
+      if (!editable) {
+        expect(
+          screen.queryByRole("button", { name: "Modifier" }),
+        ).not.toBeInTheDocument();
+        return;
+      }
+      await userEvent
+        .setup()
+        .click(await screen.findByRole("button", { name: "Modifier" }));
+      const dialog = screen.getByRole("dialog", { name: "Modifier un projet" });
+      expect(
+        within(dialog).queryByRole("button", {
+          name: "Supprimer le projet",
+        }) !== null,
+      ).toBe(deletable);
+    },
+  );
+
+  it.each(["pending", "unavailable"])(
+    "hides editing while the profile is %s",
+    async (state) => {
+      apiFetch.mockImplementation(async (input) => {
+        const path = new URL(String(input)).pathname;
+        if (path === "/auth/profile")
+          return state === "pending"
+            ? new Promise<Response>(() => {})
+            : new Response(null, { status: 500 });
+        if (path.endsWith("/tasks")) return tasksResponse([]);
+        return Response.json({
+          success: true,
+          data: { project: ownedProject },
+        });
+      });
+      renderDetails();
+      await screen.findByRole("heading", { level: 1, name: ownedProject.name });
+      expect(
+        screen.queryByRole("button", { name: "Modifier" }),
+      ).not.toBeInTheDocument();
+    },
+  );
 
   it.each([403, 404])(
     "shows an honest inaccessible state for HTTP %i",
     async (status) => {
-      apiFetch.mockResolvedValueOnce(
-        Response.json(
+      apiFetch.mockImplementation(async (input) => {
+        if (new URL(String(input)).pathname === "/auth/profile")
+          return profileResponse();
+        return Response.json(
           { success: false, error: "Raw backend error" },
           { status },
-        ),
-      );
+        );
+      });
       renderDetails();
 
       expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -397,15 +458,19 @@ describe("project details", () => {
 
   it("retries a server failure and supports a project without a description", async () => {
     const user = userEvent.setup();
-    apiFetch.mockResolvedValue(tasksResponse([]));
-    apiFetch
-      .mockResolvedValueOnce(new Response(null, { status: 500 }))
-      .mockResolvedValueOnce(
-        Response.json({
-          success: true,
-          data: { project: { ...ownedProject, description: null } },
-        }),
-      );
+    let reads = 0;
+    apiFetch.mockImplementation(async (input) => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/auth/profile") return profileResponse();
+      if (path.endsWith("/tasks")) return tasksResponse([]);
+      reads += 1;
+      return reads === 1
+        ? new Response(null, { status: 500 })
+        : Response.json({
+            success: true,
+            data: { project: { ...ownedProject, description: null } },
+          });
+    });
     renderDetails();
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/projet/i);
