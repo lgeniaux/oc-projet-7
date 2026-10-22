@@ -1,13 +1,8 @@
 "use client";
 
-import { CalendarDays, ChevronDown } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { formatFrenchCalendarDate } from "@/lib/format-date";
 import { getInitials } from "@/lib/get-initials";
 import {
@@ -15,6 +10,7 @@ import {
   useProjectTasksQuery,
 } from "@/modules/projects/project-query";
 import { sortProjectTasks } from "@/modules/projects/sort-project-tasks";
+import { TaskComments } from "@/modules/tasks/task-comments";
 
 const statuses = {
   TODO: { label: "À faire", className: "bg-status-todo-soft text-status-todo" },
@@ -29,7 +25,13 @@ const statuses = {
   CANCELLED: { label: "Annulée", className: "bg-border text-text" },
 };
 
-function ProjectTaskCard({ task }: { task: ProjectTask }) {
+function ProjectTaskCard({
+  projectId,
+  task,
+}: {
+  projectId: string;
+  task: ProjectTask;
+}) {
   const status = statuses[task.status];
 
   return (
@@ -80,38 +82,7 @@ function ProjectTaskCard({ task }: { task: ProjectTask }) {
           </ul>
         )}
       </div>
-      <Collapsible className="mt-6 border-t border-border pt-2">
-        <CollapsibleTrigger className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-sm text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">
-          <span>Commentaires ({task.comments.length})</span>
-          <ChevronDown
-            aria-hidden="true"
-            className="size-4 shrink-0 group-data-[state=open]:rotate-180"
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {task.comments.length === 0 ? (
-            <p className="py-4 text-sm text-muted">Aucun commentaire.</p>
-          ) : (
-            <ul aria-label="Commentaires" className="space-y-4 py-4">
-              {task.comments.map((comment) => (
-                <li key={comment.id} className="rounded-sm bg-background p-4">
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
-                    <span className="font-medium wrap-anywhere">
-                      {comment.author.name || comment.author.email}
-                    </span>
-                    <time dateTime={comment.createdAt} className="text-muted">
-                      {formatFrenchCalendarDate(comment.createdAt)}
-                    </time>
-                  </div>
-                  <p className="mt-2 wrap-anywhere whitespace-pre-wrap">
-                    {comment.content}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
+      <TaskComments projectId={projectId} task={task} />
     </li>
   );
 }
@@ -161,7 +132,11 @@ export function ProjectTaskList({ projectId }: { projectId: string }) {
             ) : (
               <ul aria-label="Tâches du projet" className="mt-8 space-y-4">
                 {sortProjectTasks(tasks.data).map((task) => (
-                  <ProjectTaskCard key={task.id} task={task} />
+                  <ProjectTaskCard
+                    key={task.id}
+                    projectId={projectId}
+                    task={task}
+                  />
                 ))}
               </ul>
             ))}

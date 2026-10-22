@@ -229,7 +229,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D23 — Consultation sans actions hors périmètre (Maquette + Choix, #10)
 
 - **Référence** : `Single projet.png` ; tickets #9, #11, #12 et #16 ; ticket #10 excluant recherche et filtres.
-- **Statut** : complétée par D38 au ticket #9 pour « Modifier » ; les autres actions restent hors périmètre.
+- **Statut** : complétée par D38 au ticket #9 pour « Modifier » et par D50–D53 au ticket #12 pour la lecture et l'ajout de commentaires ; les autres actions restent hors périmètre.
 - **Décision** : afficher l'en-tête, les contributeurs et les tâches réelles avec commentaires dépliables en lecture seule. Ne pas afficher « Modifier », « Créer une tâche », « IA », le menu « … », Liste/Calendrier, le filtre Statut, la recherche ni l'ajout de commentaire.
 - **Justification** : ces contrôles relèvent d'autres tickets ou sont hors périmètre ; une action fictive ou désactivée donnerait une promesse trompeuse. Le dépliage donne accès au détail utile déjà reçu, sans route de tâche inventée.
 - **Remplace** : D17 pour le détail minimal du ticket #7.
@@ -243,6 +243,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D25 — Commentaires réels dans un dépliable accessible (Choix, #10)
 
 - **Référence** : `taskController.ts:274-285`, `taskComments.ts:8-29` ; `Single projet.png`, ligne « Commentaires (n) ».
+- **Statut** : complétée par D50–D53 au ticket #12 pour l'extraction et l'ajout ; le contrat de lecture reste inchangé.
 - **Décision** : compter le tableau `comments` reçu et afficher ses auteurs, dates et contenus via `Collapsible` shadcn/ui ajouté par le CLI. Conserver l'ordre chronologique du backend et afficher « Aucun commentaire. » si vide.
 - **Justification** : la réponse contient déjà les commentaires complets ; aucun appel supplémentaire, faux contenu, commentaire modifiable ou compteur estimé n'est nécessaire. Radix gère le clavier et `aria-expanded` ; les noms sont visibles, les initiales décoratives.
 
@@ -395,3 +396,30 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : validation de `PUT /projects/:id`, contrôleur de mise à jour.
 - **Impact** : `description: ""` efface la description, mais `null` provoque une erreur `500`. La réponse de mise à jour n'inclut pas `userRole`.
 - **Décision** : envoyer une chaîne vide pour effacer et ne pas remplacer le cache par cette réponse incomplète. Invalider les lectures pour retrouver le contrat complet.
+
+## Collaboration par commentaires
+
+### D50 — Commentaires extraits sans nouvelle lecture (Choix, #12)
+
+- **Référence** : `Single projet.png`, ligne « Commentaires (n) » ; `src/backend/src/utils/taskComments.ts:8-29` ; D25.
+- **Décision** : déplacer le dépliable dans `modules/tasks/task-comments.tsx`, avec `projectId` et la tâche reçue par la carte. Le compteur reste `task.comments.length` ; conserver l'ordre chronologique du backend, l'auteur ou son e-mail, la date française, le texte et l'état vide. Ne pas appeler la route de lecture de commentaires séparée.
+- **Justification** : les commentaires complets sont déjà inclus dans la requête partagée des tâches. L'extraction permet d'ajouter le formulaire sans charger le composant de liste ni créer une seconde source de données.
+- **Complète** : D23 et D25.
+
+### D51 — Formulaire intégré et validation réelle (Maquette + Choix, #12)
+
+- **Référence** : spécifications fonctionnelles §3 (ajout pour collaborer), maquette `Single projet.png` sans formulaire détaillé ; `src/backend/src/utils/validation.ts:463-487`.
+- **Décision** : ajouter dans le dépliable un formulaire sobre avec les primitives existantes `Label`, `Textarea` et `Button`. Le contenu est obligatoire et contient de 1 à 2 000 caractères après suppression des espaces de début et de fin. React Hook Form et Zod valident la saisie ; l'aide est visible, l'erreur française est reliée au champ et annoncée. Aucun raccourci Ctrl/Cmd+Entrée n'est ajouté.
+- **Justification** : respecter le contrat réel et rendre le champ multiligne utilisable au clavier, sans système de chat ni contrôle personnalisé. Le bouton reste actif avant validation afin d'expliquer une saisie vide, puis il est désactivé avec le champ pendant l'envoi.
+
+### D52 — Publication validée et invalidation partagée (Choix, #12)
+
+- **Référence** : `src/backend/src/controllers/commentController.ts:24-98` ; convention RHF et transport authentifié du projet.
+- **Décision** : envoyer `{ content }` à `POST /projects/:id/tasks/:taskId/comments`, puis vérifier `success: true` et `data.comment` avec Zod, en réutilisant le contrat de commentaire de la lecture des tâches. Les champs supplémentaires du POST (`task`, identifiants de rattachement, date de mise à jour) ne sont pas consommés. Après succès, vider le champ, annoncer « Commentaire publié. » et invalider `['projects', projectId, 'tasks']` ainsi que le préfixe `['dashboard']`.
+- **Justification** : la relecture actualise commentaire et compteur depuis la même source, sans insertion optimiste ni compteur estimé. Le commentaire ne change ni le nombre de tâches ni la progression du projet. Une erreur garde la saisie et est annoncée, même si le dépliable a été refermé pendant l'envoi ; le transport gère seul les `401`. Aucune mutation TanStack Query ni nouvelle convention de soumission n'est introduite.
+
+### D53 — Membres autorisés, lecture et ajout seulement (Choix, #12)
+
+- **Référence** : périmètre du ticket #12 ; `src/backend/src/controllers/commentController.ts:50-68` et `src/backend/src/utils/permissions.ts:10-35`.
+- **Décision** : proposer l'ajout au propriétaire et aux membres qui consultent la tâche, sans restriction aux assignés et sans contrôle de rôle supplémentaire. Express vérifie à chaque publication l'accès au projet et l'appartenance de la tâche. Modification et suppression de commentaires restent hors périmètre.
+- **Justification** : l'ajout est une fonction de collaboration pour les membres du projet. Les routes backend de modification et de suppression ne créent pas d'obligation produit supplémentaire ; aucun menu d'action fictif n'est ajouté. Les tests E2E utilisent un projet et une tâche jetables, supprimés au nettoyage, pour ne pas modifier le seed.
