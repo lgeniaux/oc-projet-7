@@ -229,7 +229,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D23 — Consultation sans actions hors périmètre (Maquette + Choix, #10)
 
 - **Référence** : `Single projet.png` ; tickets #9, #11, #12 et #16 ; ticket #10 excluant recherche et filtres.
-- **Statut** : complétée par D38 au ticket #9 pour « Modifier » ; les autres actions restent hors périmètre.
+- **Statut** : complétée par D38 au ticket #9 pour « Modifier », par D43 et D48 au ticket #11 pour « Créer une tâche » et le menu « … », puis par D50–D53 au ticket #12 pour la lecture et l'ajout de commentaires ; les autres actions restent hors périmètre.
 - **Décision** : afficher l'en-tête, les contributeurs et les tâches réelles avec commentaires dépliables en lecture seule. Ne pas afficher « Modifier », « Créer une tâche », « IA », le menu « … », Liste/Calendrier, le filtre Statut, la recherche ni l'ajout de commentaire.
 - **Justification** : ces contrôles relèvent d'autres tickets ou sont hors périmètre ; une action fictive ou désactivée donnerait une promesse trompeuse. Le dépliage donne accès au détail utile déjà reçu, sans route de tâche inventée.
 - **Remplace** : D17 pour le détail minimal du ticket #7.
@@ -243,6 +243,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D25 — Commentaires réels dans un dépliable accessible (Choix, #10)
 
 - **Référence** : `taskController.ts:274-285`, `taskComments.ts:8-29` ; `Single projet.png`, ligne « Commentaires (n) ».
+- **Statut** : complétée par D50–D53 au ticket #12 pour l'extraction et l'ajout ; le contrat de lecture reste inchangé.
 - **Décision** : compter le tableau `comments` reçu et afficher ses auteurs, dates et contenus via `Collapsible` shadcn/ui ajouté par le CLI. Conserver l'ordre chronologique du backend et afficher « Aucun commentaire. » si vide.
 - **Justification** : la réponse contient déjà les commentaires complets ; aucun appel supplémentaire, faux contenu, commentaire modifiable ou compteur estimé n'est nécessaire. Radix gère le clavier et `aria-expanded` ; les noms sont visibles, les initiales décoratives.
 
@@ -396,6 +397,99 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Impact** : `description: ""` efface la description, mais `null` provoque une erreur `500`. La réponse de mise à jour n'inclut pas `userRole`.
 - **Décision** : envoyer une chaîne vide pour effacer et ne pas remplacer le cache par cette réponse incomplète. Invalider les lectures pour retrouver le contrat complet.
 
+## Gestion des tâches
+
+### D43 — « Créer une tâche » dans la section Tâches (Maquette, #11)
+
+- **Référence** : `Single projet.png` (bouton sombre « Créer une tâche » dans l'en-tête du projet, à côté de « IA ») ; `Modale création de tâche.png`.
+- **Décision** : placer le bouton sombre avec un plus décoratif dans l'en-tête de la section « Tâches », à droite du titre (pleine largeur sur mobile). Il reste disponible pendant le chargement, l'erreur et l'état vide de la liste. Le bouton « IA » reste absent (interface IA hors ticket).
+- **Justification** : l'action est rattachée à la liste qu'elle modifie et ne dépend pas de la future interface IA ; l'en-tête du projet garde « Modifier » seul.
+- **Complète** : D23 pour « Créer une tâche ».
+
+### D44 — Description et échéance obligatoires, jour calendaire conservé (Maquette + Backend, #11)
+
+- **Référence** : `Modale création de tâche.png` (Titre*, Description*, Échéance*) ; `src/backend/src/utils/validation.ts` (`validateCreateTaskData`, `validateUpdateTaskData`) : titre de 2 à 200 caractères, description facultative de 1000 caractères maximum, échéance facultative ; `taskController.ts` (`new Date(dueDate)`).
+- **Décision** : titre de 2 à 200 caractères et description de 1 à 1000 caractères après suppression des espaces de début et de fin ; échéance obligatoire. Ces règles s'appliquent aussi à la modification : une tâche existante sans description ou sans échéance doit en recevoir une pour être enregistrée. L'échéance utilise `Input` en `type="date"` ; la valeur `AAAA-MM-JJ` est envoyée à minuit UTC (`toCalendarDateTime`), relue par `formatFrenchCalendarDate` sans conversion de fuseau.
+- **Justification** : suivre les astérisques des maquettes, plus strictes que le backend, sans dépasser ses limites. Le contrôle natif est accessible au clavier sans dépendance de calendrier. Minuit UTC garde le même jour dans tous les fuseaux (D24) ; les limites d'année sont testées.
+
+### D45 — Priorité exposée dans les formulaires (Maquette + Backend, #11)
+
+- **Référence** : `Task.priority` (`LOW`, `MEDIUM`, `HIGH`, `URGENT`, défaut `MEDIUM`) ; maquettes de tâche sans champ priorité ; tri B07.
+- **Décision** : ajouter « Priorité » sous « Assigné à », en pastilles radio « Basse », « Moyenne », « Haute », « Urgente », avec « Moyenne » par défaut.
+- **Justification** : la liste est triée par priorité ; sans ce champ, toute tâche créée serait « Moyenne » sans moyen de la changer. Décision du porteur du projet.
+
+### D46 — Statut en pastilles radio et tâches annulées (Maquette + Sujet, #11)
+
+- **Référence** : pastilles « À faire », « En cours », « Terminée » des maquettes ; B08 (`CANCELLED`).
+- **Décision** : le statut est un groupe radio shadcn/ui (`RadioGroup`) présenté en pastilles aux couleurs des badges, avec une coche et une bordure sur l'option choisie. La création propose les trois statuts du sujet, « À faire » par défaut. La modification propose aussi « Annulée » seulement si la tâche l'est déjà : la valeur est conservée et peut être remplacée par un des trois statuts du sujet.
+- **Justification** : un groupe radio annonce le choix unique et se parcourt aux flèches ; la coche évite de reposer sur la couleur. Aucune annulation n'est introduite par l'interface, mais une donnée réelle n'est ni masquée ni transformée silencieusement.
+
+### D47 — Assignés choisis dans un menu à cases (Maquette + Choix, #11)
+
+- **Référence** : liste déroulante « Choisir un ou plusieurs collaborateurs » et « 2 collaborateurs » des maquettes ; `validateProjectMembers` (propriétaire et membres).
+- **Décision** : `DropdownMenu` shadcn/ui avec `DropdownMenuCheckboxItem`, qui reste ouvert pour cocher plusieurs personnes. Les options sont le propriétaire puis les membres du projet lus dans le cache du détail (nom et e-mail). Le déclencheur, nommé « Assigné à » suivi de la sélection, affiche les noms choisis au lieu d'un simple nombre.
+- **Justification** : primitive existante, accessible au clavier (flèches, Espace, Échap), sans dépendance de combobox. Seules les personnes acceptées par Express sont proposées ; les noms sont plus informatifs qu'un compteur.
+
+### D48 — Menu « … » de la carte et suppression confirmée (Maquette + Choix, #11)
+
+- **Référence** : bouton « … » des cartes de `Single projet.png` ; règle de confirmation destructive ; D42.
+- **Décision** : le bouton « … », nommé « Actions de la tâche « titre » », ouvre un menu « Modifier » / « Supprimer ». « Supprimer » ouvre un `AlertDialog` (« Supprimer cette tâche ? », focus initial sur « Annuler », actions bloquées pendant l'envoi). Après succès, la tâche est retirée du cache puis les vues sont invalidées ; « Tâche « titre » supprimée. » est annoncé dans la section et le focus passe sur son titre « Tâches ». Une réponse `404` est traitée comme une tâche déjà supprimée. Après modification, le focus revient sur « … » et « Tâche modifiée. » est annoncé.
+- **Justification** : suivre la maquette sans multiplier les boutons par carte ; ne jamais laisser le focus sur un élément retiré du document.
+
+### D49 — Champs modifiés seulement et invalidations des vues de tâches (Choix, #11)
+
+- **Référence** : convention D36 ; clés `['projects', id, 'tasks']`, `['projects']` et `['dashboard']`.
+- **Décision** : conserver `handleSubmit` → `authenticatedFetch` → Zod, sans `useMutation`. La modification compare le formulaire à la tâche et envoie dans `PUT /projects/:id/tasks/:taskId` seulement les champs changés. Après chaque écriture, invalider les tâches du projet, la liste des projets (compteur de tâches, sans relecture si elle n'est pas affichée) et le préfixe `['dashboard']`. Les erreurs `400` sont reliées aux champs (titre, description, échéance, priorité, statut, assignés) ; `403`, `404` et les pannes donnent un message français et conservent les saisies. X, Échap et le clic extérieur ne ferment pas une modale pendant l'envoi.
+- **Justification** : éviter d'écraser une modification concurrente des autres champs ; actualiser la liste, la progression et le tableau de bord sans rechargement.
+
+### B15 — Statut ignoré à la création (Backend, #11)
+
+- **Référence** : `src/backend/src/controllers/taskController.ts` (`createTask` lit `title`, `description`, `priority`, `dueDate`, `assigneeIds`, jamais `status`) ; `Task.status` vaut `TODO` par défaut.
+- **Impact** : le statut choisi dans la modale de création ne peut pas être enregistré par `POST /projects/:id/tasks`.
+- **Décision** : backend inchangé. Envoyer le `POST`, puis un `PUT` du seul `status` s'il diffère de « À faire ». Si ce `PUT` échoue, la tâche existe en « À faire » : la modale se ferme et un message `role="alert"` le dit et invite à modifier la tâche. Aucun rollback ni nouvelle tentative automatique.
+- **Justification** : décision du porteur du projet ; un renvoi de la création dupliquerait la tâche.
+
+### B16 — Tâches gérées par tous les membres (Backend + Sujet, #11)
+
+- **Référence** : spécifications fonctionnelles §1 (le contributeur peut seulement créer ou supprimer des tâches) ; `src/backend/src/utils/permissions.ts` (`canCreateTasks` et `canModifyTasks` reposent sur `hasProjectAccess`).
+- **Impact** : Express autorise tout membre (propriétaire, `ADMIN`, `CONTRIBUTOR`) à créer, modifier et supprimer une tâche.
+- **Décision** : backend inchangé ; suivre son contrat. « Créer une tâche » et le menu « … » sont visibles par tout lecteur du projet ; un `403` éventuel est annoncé.
+- **Justification** : décision du porteur du projet de suivre le contrat réel ; Express reste l'autorité de chaque écriture.
+
+### B17 — Assignations remplacées en bloc et anciens membres (Backend, #11)
+
+- **Référence** : `src/backend/src/utils/taskAssignments.ts` (`updateTaskAssignments` supprime puis recrée toutes les assignations ; `validateProjectMembers`) ; `taskController.ts` (`INVALID_ASSIGNEES` en `400`, sans détail par champ) ; B12.
+- **Impact** : `assigneeIds` remplace toute la liste (`[]` retire tout le monde). Une liste contenant une personne retirée du projet est refusée en bloc.
+- **Décision** : envoyer `assigneeIds` seulement si la sélection a changé, toujours filtrée aux membres actuels. À l'édition, les assignés qui ne sont plus membres sont absents du choix et cités sous le champ : « Leur assignation sera retirée à l'enregistrement. » `INVALID_ASSIGNEES` est affiché sur le champ « Assigné à » et relit le détail du projet pour mettre à jour la liste des membres.
+- **Justification** : respecter la règle « aucune assignation hors du projet » tout en expliquant la disparition d'une assignation conservée par Express.
+
+## Collaboration par commentaires
+
+### D50 — Commentaires extraits sans nouvelle lecture (Choix, #12)
+
+- **Référence** : `Single projet.png`, ligne « Commentaires (n) » ; `src/backend/src/utils/taskComments.ts:8-29` ; D25.
+- **Décision** : déplacer le dépliable dans `modules/tasks/task-comments.tsx`, avec `projectId` et la tâche reçue par la carte. Le compteur reste `task.comments.length` ; conserver l'ordre chronologique du backend, l'auteur ou son e-mail, la date française, le texte et l'état vide. Ne pas appeler la route de lecture de commentaires séparée.
+- **Justification** : les commentaires complets sont déjà inclus dans la requête partagée des tâches. L'extraction permet d'ajouter le formulaire sans charger le composant de liste ni créer une seconde source de données.
+- **Complète** : D23 et D25.
+
+### D51 — Formulaire intégré et validation réelle (Maquette + Choix, #12)
+
+- **Référence** : spécifications fonctionnelles §3 (ajout pour collaborer), maquette `Single projet.png` sans formulaire détaillé ; `src/backend/src/utils/validation.ts:463-487`.
+- **Décision** : ajouter dans le dépliable un formulaire sobre avec les primitives existantes `Label`, `Textarea` et `Button`. Le contenu est obligatoire et contient de 1 à 2 000 caractères après suppression des espaces de début et de fin. React Hook Form et Zod valident la saisie ; l'aide est visible, l'erreur française est reliée au champ et annoncée. Aucun raccourci Ctrl/Cmd+Entrée n'est ajouté.
+- **Justification** : respecter le contrat réel et rendre le champ multiligne utilisable au clavier, sans système de chat ni contrôle personnalisé. Le bouton reste actif avant validation afin d'expliquer une saisie vide, puis il est désactivé avec le champ pendant l'envoi.
+
+### D52 — Publication validée et invalidation partagée (Choix, #12)
+
+- **Référence** : `src/backend/src/controllers/commentController.ts:24-98` ; convention RHF et transport authentifié du projet.
+- **Décision** : envoyer `{ content }` à `POST /projects/:id/tasks/:taskId/comments`, puis vérifier `success: true` et `data.comment` avec Zod, en réutilisant le contrat de commentaire de la lecture des tâches. Les champs supplémentaires du POST (`task`, identifiants de rattachement, date de mise à jour) ne sont pas consommés. Après succès, vider le champ, annoncer « Commentaire publié. » et invalider `['projects', projectId, 'tasks']` ainsi que le préfixe `['dashboard']`.
+- **Justification** : la relecture actualise commentaire et compteur depuis la même source, sans insertion optimiste ni compteur estimé. Le commentaire ne change ni le nombre de tâches ni la progression du projet. Une erreur garde la saisie et est annoncée, même si le dépliable a été refermé pendant l'envoi ; le transport gère seul les `401`. Aucune mutation TanStack Query ni nouvelle convention de soumission n'est introduite.
+
+### D53 — Membres autorisés, lecture et ajout seulement (Choix, #12)
+
+- **Référence** : périmètre du ticket #12 ; `src/backend/src/controllers/commentController.ts:50-68` et `src/backend/src/utils/permissions.ts:10-35`.
+- **Décision** : proposer l'ajout au propriétaire et aux membres qui consultent la tâche, sans restriction aux assignés et sans contrôle de rôle supplémentaire. Express vérifie à chaque publication l'accès au projet et l'appartenance de la tâche. Modification et suppression de commentaires restent hors périmètre.
+- **Justification** : l'ajout est une fonction de collaboration pour les membres du projet. Les routes backend de modification et de suppression ne créent pas d'obligation produit supplémentaire ; aucun menu d'action fictif n'est ajouté. Les tests E2E utilisent un projet et une tâche jetables, supprimés au nettoyage, pour ne pas modifier le seed.
+
 ## Tâches assignées du tableau de bord
 
 ### D54 — Liste personnelle sans contrôles hors périmètre (Maquette + Choix, #13)
@@ -428,13 +522,13 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Décision** : « Voir » ouvre `/projects/[projectId]#task-[taskId]`. Chaque carte du projet porte cet identifiant stable, `tabIndex={-1}`, une marge de défilement et un focus visible. Après chargement, le projet fait défiler et focalise la cible une seule fois ; les relectures ne déplacent plus le focus.
 - **Justification** : l'ancre native peut être cherchée avant l'existence de la carte. Le traitement vérifie que la cible appartient aux tâches reçues, sans route de tâche inventée. Une cible absente ne provoque pas de déplacement. Le refus neutre existant du projet reste applicable après perte d'accès (B12).
 
-### B20 — Tri alphabétique des priorités du dashboard (Backend, #13)
+### B18 — Tri alphabétique des priorités du dashboard (Backend, #13)
 
 - **Référence** : `src/backend/src/controllers/dashboardController.ts:92-100`, `orderBy: [{ priority: "asc" }, { dueDate: "asc" }]` ; priorité stockée comme chaîne Prisma. Le commentaire `URGENT, HIGH, MEDIUM, LOW` ne change pas cet ordre alphabétique.
 - **Impact** : l'ordre croissant des chaînes n'est pas l'ordre d'urgence métier demandé, et diffère aussi du tri décroissant de la liste du projet (B07).
 - **Décision** : backend conservé ; appliquer côté client le tri partagé de D56, sur décision du porteur du projet. Aucun ajustement de l'API ni ordre implicite.
 
-### B21 — Tous les statuts renvoyés dans les assignations (Backend + Choix, #13)
+### B19 — Tous les statuts renvoyés dans les assignations (Backend + Choix, #13)
 
 - **Référence** : `src/backend/src/controllers/dashboardController.ts:50-57`, filtre limité à `assignees.some.userId`, sans condition de statut.
 - **Impact** : la réponse inclut aussi les tâches terminées et annulées, qui ne représentent plus le travail restant de la liste personnelle.

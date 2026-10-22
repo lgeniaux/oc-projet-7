@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { CalendarDays, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CalendarDays } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { formatFrenchCalendarDate } from "@/lib/format-date";
 import { getInitials } from "@/lib/get-initials";
 import {
@@ -16,9 +11,20 @@ import {
   useProjectTasksQuery,
 } from "@/modules/projects/project-query";
 import { sortTasksByPriority } from "@/modules/tasks/sort-tasks-by-priority";
+import { TaskActions } from "@/modules/tasks/task-actions";
+import { TaskComments } from "@/modules/tasks/task-comments";
+import { TaskCreation } from "@/modules/tasks/task-creation";
 import { taskStatuses } from "@/modules/tasks/task-status";
 
-function ProjectTaskCard({ task }: { task: ProjectTask }) {
+function ProjectTaskCard({
+  projectId,
+  task,
+  onDeleted,
+}: {
+  projectId: string;
+  task: ProjectTask;
+  onDeleted: (title: string) => void;
+}) {
   const status = taskStatuses[task.status];
 
   return (
@@ -27,13 +33,18 @@ function ProjectTaskCard({ task }: { task: ProjectTask }) {
       tabIndex={-1}
       className="min-w-0 scroll-mt-6 rounded-md border border-border bg-surface p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link sm:p-6"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="min-w-0 font-heading text-lg font-semibold wrap-anywhere">
-          {task.title}
-        </h3>
-        <span className={`rounded-full px-3 py-1 text-sm ${status.className}`}>
-          {status.label}
-        </span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3 className="min-w-0 font-heading text-lg font-semibold wrap-anywhere">
+            {task.title}
+          </h3>
+          <span
+            className={`rounded-full px-3 py-1 text-sm ${status.className}`}
+          >
+            {status.label}
+          </span>
+        </div>
+        <TaskActions projectId={projectId} task={task} onDeleted={onDeleted} />
       </div>
       <p className="mt-2 wrap-anywhere whitespace-pre-wrap text-muted">
         {task.description || "Aucune description."}
@@ -73,38 +84,7 @@ function ProjectTaskCard({ task }: { task: ProjectTask }) {
           </ul>
         )}
       </div>
-      <Collapsible className="mt-6 border-t border-border pt-2">
-        <CollapsibleTrigger className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-sm text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link">
-          <span>Commentaires ({task.comments.length})</span>
-          <ChevronDown
-            aria-hidden="true"
-            className="size-4 shrink-0 group-data-[state=open]:rotate-180"
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {task.comments.length === 0 ? (
-            <p className="py-4 text-sm text-muted">Aucun commentaire.</p>
-          ) : (
-            <ul aria-label="Commentaires" className="space-y-4 py-4">
-              {task.comments.map((comment) => (
-                <li key={comment.id} className="rounded-sm bg-background p-4">
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
-                    <span className="font-medium wrap-anywhere">
-                      {comment.author.name || comment.author.email}
-                    </span>
-                    <time dateTime={comment.createdAt} className="text-muted">
-                      {formatFrenchCalendarDate(comment.createdAt)}
-                    </time>
-                  </div>
-                  <p className="mt-2 wrap-anywhere whitespace-pre-wrap">
-                    {comment.content}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CollapsibleContent>
-      </Collapsible>
+      <TaskComments projectId={projectId} task={task} />
     </li>
   );
 }
@@ -126,20 +106,40 @@ export function ProjectTaskList({ projectId }: { projectId: string }) {
     target.focus({ preventScroll: true });
   }, [tasks.data]);
 
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const [deletionNotice, setDeletionNotice] = useState("");
+  // The deleted card is gone: keep the focus in the task section.
+  function announceDeletion(title: string) {
+    setDeletionNotice(`Tâche « ${title} » supprimée.`);
+    headingRef.current?.focus();
+  }
+
   return (
     <section
       aria-labelledby="project-tasks-heading"
       className="mt-8 min-w-0 rounded-md border border-border bg-surface p-4 sm:p-6 lg:p-8"
     >
-      <h2
-        id="project-tasks-heading"
-        className="font-heading text-xl font-semibold"
-      >
-        Tâches
-      </h2>
-      <p className="mt-1 text-sm text-muted">
-        Par ordre de priorité, puis d’échéance
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2
+            ref={headingRef}
+            id="project-tasks-heading"
+            tabIndex={-1}
+            className="rounded-sm font-heading text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            Tâches
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Par ordre de priorité, puis d’échéance
+          </p>
+        </div>
+        <TaskCreation projectId={projectId} />
+        {deletionNotice && (
+          <p role="status" className="basis-full text-sm wrap-anywhere">
+            {deletionNotice}
+          </p>
+        )}
+      </div>
       {tasks.isPending ? (
         <p role="status" className="mt-6 text-muted">
           Chargement des tâches…
@@ -168,7 +168,12 @@ export function ProjectTaskList({ projectId }: { projectId: string }) {
             ) : (
               <ul aria-label="Tâches du projet" className="mt-8 space-y-4">
                 {sortTasksByPriority(tasks.data).map((task) => (
-                  <ProjectTaskCard key={task.id} task={task} />
+                  <ProjectTaskCard
+                    key={task.id}
+                    projectId={projectId}
+                    task={task}
+                    onDeleted={announceDeletion}
+                  />
                 ))}
               </ul>
             ))}
