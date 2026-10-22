@@ -229,6 +229,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D23 — Consultation sans actions hors périmètre (Maquette + Choix, #10)
 
 - **Référence** : `Single projet.png` ; tickets #9, #11, #12 et #16 ; ticket #10 excluant recherche et filtres.
+- **Statut** : complétée par D38 au ticket #9 pour « Modifier » ; les autres actions restent hors périmètre.
 - **Décision** : afficher l'en-tête, les contributeurs et les tâches réelles avec commentaires dépliables en lecture seule. Ne pas afficher « Modifier », « Créer une tâche », « IA », le menu « … », Liste/Calendrier, le filtre Statut, la recherche ni l'ajout de commentaire.
 - **Justification** : ces contrôles relèvent d'autres tickets ou sont hors périmètre ; une action fictive ou désactivée donnerait une promesse trompeuse. Le dépliage donne accès au détail utile déjà reçu, sans route de tâche inventée.
 - **Remplace** : D17 pour le détail minimal du ticket #7.
@@ -290,7 +291,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 ### D32 — Description facultative et limites réelles (Maquette + Backend, #8)
 
 - **Référence** : `Modale création projet.png` marque titre et description obligatoires ; `src/backend/src/utils/validation.ts:194-215`.
-- **Décision** : seul « Titre » porte un astérisque. Il contient entre 2 et 100 caractères après suppression des espaces de début et de fin ; la description est facultative et limitée à 500 caractères après la même normalisation. Une description vide est omise. `Textarea` shadcn/ui remplace le champ court de la maquette et permet une saisie multiligne.
+- **Décision** : seul « Titre » porte un astérisque. Il contient entre 2 et 100 caractères après suppression des espaces de début et de fin ; la description est facultative et limitée à 500 caractères après la même normalisation. Une description vide est omise à la création et envoyée avec `""` à la modification (B14). `Textarea` shadcn/ui remplace le champ court de la maquette et permet une saisie multiligne.
 - **Justification** : ne pas imposer de contrainte métier absente d'Express ; rendre les limites visibles avant envoi et conserver une description lisible.
 
 ### D33 — Recherche simple et liste de contributeurs (Maquette + Choix, #8)
@@ -301,9 +302,9 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 ### D34 — Aucun choix de rôle à la création (Backend + Choix, #8)
 
-- **Référence** : `projectController.ts:113-118,160-165` ; spécifications fonctionnelles §2 ; gestion des membres au ticket #9.
+- **Référence** : `projectController.ts:113-118,160-165` ; spécifications fonctionnelles §2 ; décision D39 au ticket #9.
 - **Décision** : Express définit le propriétaire à partir du JWT ; tous les membres choisis sont des contributeurs. L'interface l'explique, sans sélecteur `ADMIN`.
-- **Justification** : le corps de création n'accepte pas de rôle et impose `CONTRIBUTOR`. Ne pas proposer une permission impossible à enregistrer ; la gestion des rôles appartient à #9.
+- **Justification** : le corps de création n'accepte pas de rôle et impose `CONTRIBUTOR`. Ne pas proposer une permission impossible à enregistrer. D39 confirme l'absence de gestion des rôles dans l'administration du projet.
 
 ### D35 — Validation explicite à la soumission (Maquette + Choix, #8)
 
@@ -336,3 +337,61 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Impact** : le schéma de lecture d'un projet exige `userRole`, mais `POST /projects` ne le renvoie pas.
 - **Décision** : dériver un schéma de création du schéma existant en omettant seulement `userRole` ; invalider les lectures au lieu d'inventer ce champ dans la réponse.
 - **Justification** : suivre le contrat réel sans modifier le backend ni assouplir les réponses de lecture.
+
+## Administration d'un projet
+
+### D38 — Actions visibles selon les permissions réelles (Choix, #9)
+
+- **Référence** : `Single projet.png`, lien « Modifier » ; permissions Express ; décision du porteur du projet.
+- **Décision** : afficher « Modifier » au propriétaire et aux membres `ADMIN`. Réserver « Supprimer le projet » au propriétaire. Les contributeurs et les profils en chargement ou indisponibles ne voient aucune de ces actions. Les actions sont masquées, jamais désactivées faute de permission.
+- **Justification** : `userRole: ADMIN` ne distingue pas le propriétaire d'un membre administrateur. `getProjectViewerRole` compare les identifiants et centralise la règle pour les cartes et le détail. Express reste l'autorité lors de chaque écriture.
+- **Complète** : D23.
+
+### D39 — Ajouts limités au rôle contributeur (Sujet + Choix, #9)
+
+- **Référence** : spécifications, administrateurs des projets qu'ils ont créés ; décision du porteur du projet.
+- **Décision** : ne proposer ni attribution ni modification de rôle. Chaque ajout envoie seulement `{ email }` ; Express applique `CONTRIBUTOR`. L'interface ne crée aucun membre `ADMIN`.
+- **Justification** : dans les parcours de l'interface, l'administrateur est le propriétaire. Un membre `ADMIN` préexistant conserve son droit de modification, sans droit de suppression (B11).
+- **Complète** : D34.
+
+### D40 — Champs partagés, contrôleurs distincts (Choix, #9)
+
+- **Référence** : `Modale création projet.png`, `Modale modifier projet.png` ; règle d'extraction au deuxième usage.
+- **Décision** : partager le schéma `ProjectFields`, ses champs et leur accessibilité dans `ProjectFormFields`. Réutiliser `ContributorPicker` avec une description explicite, `ownerId` et des identifiants `useId`. Le lecteur sélectionné reste visible avec « Vous », sans bouton de retrait. Création et modification gardent leurs propres contrôleurs.
+- **Justification** : partager les contraintes et la présentation sans ajouter de formulaire à modes ni mêler des séquences réseau différentes.
+
+### D41 — Enregistrement non atomique et erreurs par personne (Backend + Choix, #9)
+
+- **Référence** : routes séparées `PUT /projects/:id`, `POST /projects/:id/contributors` et `DELETE /projects/:id/contributors/:userId`.
+- **Décision** : comparer les membres par identifiant, en protégeant le propriétaire et le lecteur. Enregistrer les champs modifiés, puis les ajouts et enfin les retraits, un par un. Un refus des champs arrête la séquence ; un `403` sur un membre arrête les écritures restantes. Après une écriture, invalider le préfixe `['projects']`. Une erreur partielle garde la modale ouverte et nomme les personnes concernées ; si les champs sont enregistrés, le message le précise.
+- **Justification** : Express ne propose pas d'opération atomique. Aucun rollback n'est simulé. La sélection et sa référence repartent des membres relus ; le lecteur peut sélectionner de nouveau les changements échoués. Une relecture échouée permet encore une nouvelle tentative sûre, car `409 USER_ALREADY_MEMBER` vaut succès et retirer un non-membre renvoie `200`.
+
+### D42 — Suppression confirmée dans la modale de modification (Choix, #9)
+
+- **Référence** : `Single projet.png` sans bouton de suppression ; règle de confirmation destructive ; décision du porteur du projet.
+- **Décision** : placer une zone séparée après le formulaire, réservée au propriétaire, avec un bouton `outline`. `AlertDialog` shadcn/ui annonce la perte des tâches et commentaires et donne le focus initial à « Annuler ». Pendant la suppression, les deux actions et la fermeture sont bloquées. Après succès, démonter le détail, les tâches et les modales avant d'annuler et de retirer leur cache, retirer le projet de la liste, marquer cette liste périmée sans relecture puis remplacer la route par `/projects`.
+- **Justification** : éviter une relecture du projet supprimé et un faux état « Projet inaccessible ». Les annonces utilisent `role="status"` ou `role="alert"`, sans toast, paramètre d'URL ni token de couleur destructif.
+
+### B11 — Suppression réservée au propriétaire (Backend + Sujet, #9)
+
+- **Référence** : spécifications, suppression par les administrateurs ; `permissions.ts`, `canDeleteProject` fondé sur `isProjectOwner`.
+- **Impact** : un membre `ADMIN` préexistant peut modifier le projet mais ne peut pas le supprimer.
+- **Décision** : backend inchangé ; respecter cette distinction dans l'interface. Aucun membre `ADMIN` n'est créé par l'interface (D39), donc l'administrateur y est en pratique le propriétaire.
+
+### B12 — Assignations conservées après retrait d'un membre (Backend, #9)
+
+- **Référence** : relations Prisma `ProjectMember` et `TaskAssignee` indépendantes ; retrait par `deleteMany`.
+- **Impact** : la personne retirée perd l'accès au projet mais reste assignée aux tâches existantes.
+- **Décision** : backend inchangé ; ne pas ajouter de nettoyage ni de requêtes d'assignation. Le ticket #11 doit filtrer les assignés qui ne sont plus membres lors de l'édition d'une tâche.
+
+### B13 — Propriétaire accepté comme membre et retrait silencieux (Backend, #9)
+
+- **Référence** : `projectController.ts`, ajout par e-mail sans exclusion du propriétaire et retrait par `deleteMany`.
+- **Impact** : l'API peut créer une ligne membre pour le propriétaire ; certains retraits sans ligne correspondante réussissent silencieusement. Un administrateur qui se retire perd son accès.
+- **Décision** : backend inchangé ; exclure le propriétaire des résultats et protéger les identifiants du propriétaire et du lecteur dans le calcul des changements. Ne jamais proposer leur retrait.
+
+### B14 — Effacement de description et réponse PUT (Backend, #9)
+
+- **Référence** : validation de `PUT /projects/:id`, contrôleur de mise à jour.
+- **Impact** : `description: ""` efface la description, mais `null` provoque une erreur `500`. La réponse de mise à jour n'inclut pas `userRole`.
+- **Décision** : envoyer une chaîne vide pour effacer et ne pas remplacer le cache par cette réponse incomplète. Invalider les lectures pour retrouver le contrat complet.

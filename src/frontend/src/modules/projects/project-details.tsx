@@ -1,17 +1,64 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/get-initials";
+import { useProfileQuery } from "@/modules/auth/profile-query";
+import { ProjectEditing } from "@/modules/projects/project-editing";
 import { OwnerCrown } from "@/modules/projects/owner-crown";
 import { ProjectTaskList } from "@/modules/projects/project-task-list";
 import {
+  type Project,
+  getProjectViewerRole,
   ProjectRequestError,
   useProjectQuery,
 } from "@/modules/projects/project-query";
 
 export function ProjectDetails({ projectId }: { projectId: string }) {
+  const [isDeleted, setIsDeleted] = useState(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isDeleted) return;
+    async function leaveDeletedProject() {
+      await queryClient.cancelQueries({ queryKey: ["projects", projectId] });
+      queryClient.removeQueries({ queryKey: ["projects", projectId] });
+      queryClient.setQueryData<Project[]>(["projects"], (list) =>
+        list?.filter((project) => project.id !== projectId),
+      );
+      await queryClient.invalidateQueries({
+        queryKey: ["projects"],
+        exact: true,
+        refetchType: "none",
+      });
+      router.replace("/projects");
+    }
+    void leaveDeletedProject();
+  }, [isDeleted, projectId, queryClient, router]);
+
+  return isDeleted ? (
+    <p role="status">Projet supprimé. Retour à vos projets…</p>
+  ) : (
+    <ProjectDetailsContent
+      projectId={projectId}
+      onDeleted={() => setIsDeleted(true)}
+    />
+  );
+}
+
+function ProjectDetailsContent({
+  projectId,
+  onDeleted,
+}: {
+  projectId: string;
+  onDeleted: () => void;
+}) {
   const project = useProjectQuery(projectId);
+  const profile = useProfileQuery();
   const isInaccessible =
     project.error instanceof ProjectRequestError &&
     (project.error.status === 403 || project.error.status === 404);
@@ -60,12 +107,22 @@ export function ProjectDetails({ projectId }: { projectId: string }) {
       </div>
     );
   }
+  const role = getProjectViewerRole(project.data, profile.data?.id);
 
   return (
     <div className="mt-6 min-w-0">
-      <h1 className="font-heading text-2xl font-semibold wrap-anywhere">
-        {project.data.name}
-      </h1>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <h1 className="min-w-0 font-heading text-2xl font-semibold wrap-anywhere">
+          {project.data.name}
+        </h1>
+        {(role === "owner" || role === "admin") && (
+          <ProjectEditing
+            project={project.data}
+            canDelete={role === "owner"}
+            onDeleted={onDeleted}
+          />
+        )}
+      </div>
       <p className="mt-4 wrap-anywhere whitespace-pre-wrap text-muted">
         {project.data.description || "Aucune description."}
       </p>

@@ -11,6 +11,7 @@ import { ProjectCreation } from "@/modules/projects/project-creation";
 import { OwnerCrown } from "@/modules/projects/owner-crown";
 import { getProjectProgress } from "@/modules/projects/project-progress";
 import {
+  getProjectViewerRole,
   type Project,
   useProjectsQuery,
   useProjectTasksQuery,
@@ -87,13 +88,13 @@ function ProjectListContent() {
             let currentUserRole = profile.isPending
               ? "Chargement du rôle…"
               : "Rôle indisponible";
-            if (profile.data) {
-              currentUserRole =
-                profile.data.id === project.owner.id
-                  ? "Propriétaire"
-                  : project.userRole === "ADMIN"
-                    ? "Administrateur"
-                    : "Contributeur";
+            const role = getProjectViewerRole(project, profile.data?.id);
+            if (role) {
+              currentUserRole = {
+                owner: "Propriétaire",
+                admin: "Administrateur",
+                contributor: "Contributeur",
+              }[role];
             }
 
             return (

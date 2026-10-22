@@ -20,11 +20,13 @@ Utilisateur ayant créé un projet. Le backend lui réserve notamment la suppres
 
 ### Administrateur
 
-Membre autorisé à modifier les informations d'un projet et à gérer ses contributeurs. Les différences éventuelles entre ce rôle, le propriétaire et les spécifications doivent être arbitrées lorsqu'elles affectent une fonctionnalité.
+Membre autorisé à modifier les informations d'un projet et à gérer ses contributeurs, mais pas à supprimer le projet. L'interface ne crée pas de membres `ADMIN` et ne propose pas de gestion des rôles ; ses ajouts sont toujours des contributeurs. Dans les parcours de l'interface, l'administrateur est donc le propriétaire. Un membre `ADMIN` préexistant peut modifier le projet sans pouvoir le supprimer.
 
 ### Contributeur
 
 Membre autorisé à consulter un projet et à gérer ses tâches dans les limites imposées par le backend.
+
+Une personne retirée des membres perd l'accès au projet, mais conserve ses assignations de tâches dans le backend fourni. L'édition d'une tâche doit filtrer les assignés qui ne sont plus membres.
 
 ### Tâche
 
