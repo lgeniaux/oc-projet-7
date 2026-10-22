@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatFrenchCalendarDate, formatFrenchDate } from "@/lib/format-date";
+import {
+  formatFrenchCalendarDate,
+  formatFrenchDate,
+  toCalendarDateTime,
+} from "@/lib/format-date";
 
 describe("formatFrenchDate", () => {
   it("affiche une date en français", () => {
@@ -27,4 +31,18 @@ describe("formatFrenchCalendarDate", () => {
   ])("preserves the API calendar day for %s", (value, expected) => {
     expect(formatFrenchCalendarDate(value)).toBe(expected);
   });
+});
+
+describe("toCalendarDateTime", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it.each(["America/Los_Angeles", "Pacific/Kiritimati"])(
+    "sends the chosen day at the year boundary in %s",
+    (timeZone) => {
+      vi.stubEnv("TZ", timeZone);
+      const value = toCalendarDateTime("2026-12-31");
+      expect(new Date(value).toISOString()).toBe("2026-12-31T00:00:00.000Z");
+      expect(formatFrenchCalendarDate(value)).toBe("31 décembre 2026");
+    },
+  );
 });
