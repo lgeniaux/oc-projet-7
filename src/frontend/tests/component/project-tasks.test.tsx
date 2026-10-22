@@ -495,4 +495,67 @@ describe("project tasks", () => {
       screen.getByRole("heading", { level: 3, name: task().title }),
     ).toBeVisible();
   });
+
+  it("focuses a task hash after loading without taking focus again on a task refresh", async () => {
+    const { promise, resolve } = Promise.withResolvers<Response>();
+    const scrollIntoView = vi.fn();
+    const previousScroll = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "scrollIntoView",
+    );
+    const previousUrl = window.location.href;
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    window.history.replaceState(null, "", "#task-database");
+    let client!: QueryClient;
+    let requests = 0;
+    mockTaskRequests(() => {
+      requests += 1;
+      return requests === 1
+        ? promise
+        : tasksResponse([task({ description: "Description actualisée." })]);
+    });
+    try {
+      renderDetails((queryClient) => {
+        client = queryClient;
+      });
+      await screen.findByText("Chargement des tâches…");
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      await act(async () => {
+        resolve(tasksResponse([task()]));
+      });
+      const title = await screen.findByRole("heading", {
+        level: 3,
+        name: task().title,
+      });
+      expect(title.closest("li")).toHaveFocus();
+      expect(title.closest("li")).toHaveAttribute("id", "task-database");
+      expect(title.closest("li")).toHaveAttribute("tabindex", "-1");
+      expect(scrollIntoView).toHaveBeenCalledOnce();
+
+      const comments = screen.getByRole("button", { name: "Commentaires (0)" });
+      comments.focus();
+      await act(async () => {
+        await client.invalidateQueries({
+          queryKey: ["projects", project.id, "tasks"],
+        });
+      });
+      expect(await screen.findByText("Description actualisée.")).toBeVisible();
+      expect(comments).toHaveFocus();
+      expect(scrollIntoView).toHaveBeenCalledOnce();
+    } finally {
+      window.history.replaceState(null, "", previousUrl);
+      if (previousScroll) {
+        Object.defineProperty(
+          HTMLElement.prototype,
+          "scrollIntoView",
+          previousScroll,
+        );
+      } else {
+        Reflect.deleteProperty(HTMLElement.prototype, "scrollIntoView");
+      }
+    }
+  });
 });

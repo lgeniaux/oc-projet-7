@@ -395,3 +395,47 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : validation de `PUT /projects/:id`, contrôleur de mise à jour.
 - **Impact** : `description: ""` efface la description, mais `null` provoque une erreur `500`. La réponse de mise à jour n'inclut pas `userRole`.
 - **Décision** : envoyer une chaîne vide pour effacer et ne pas remplacer le cache par cette réponse incomplète. Invalider les lectures pour retrouver le contrat complet.
+
+## Tâches assignées du tableau de bord
+
+### D54 — Liste personnelle sans contrôles hors périmètre (Maquette + Choix, #13)
+
+- **Référence** : `sujet/maquette/Dashboard.png` ; spécifications §4 ; tickets #14 et #15.
+- **Décision** : remplacer le texte d'attente du dashboard par « Mes tâches assignées ». Ne pas ajouter les onglets Liste/Kanban, la recherche ou « Créer un projet » sur cette page. Le parcours de création existant reste sur `/projects`.
+- **Justification** : livrer la liste réelle demandée sans faux contrôle ni extension aux autres vues prévues par les tickets suivants.
+
+### D55 — Lecture authentifiée et cache dashboard dédié (Choix, #13)
+
+- **Référence** : `src/backend/src/index.ts:65`, `src/backend/src/routes/dashboardRoutes.ts:11-15`, `dashboardController.ts:50-57,102` ; convention de `project-query.ts`.
+- **Décision** : lire `GET /dashboard/assigned-tasks` via `authenticatedFetch`, valider `data.tasks` avec Zod et utiliser `['dashboard', 'assigned-tasks']`, un signal d'annulation, une minute de fraîcheur et aucune relance automatique. Les tâches et commentaires écrits invalident le préfixe `['dashboard']` en plus des tâches du projet.
+- **Justification** : Express sélectionne les assignations de l'utilisateur authentifié. Une réponse invalide est une erreur, pas une liste vide ; une erreur d'actualisation conserve les dernières cartes avec annonce et relance manuelle, comme dans les projets.
+
+### D56 — Tâches ouvertes et ordre métier partagé (Choix, #13)
+
+- **Référence** : spécifications §4 (« les plus urgents d'abord »), règle B07 ; décision explicite du porteur du projet.
+- **Décision** : masquer `DONE` et `CANCELLED` uniquement dans la liste personnelle. Trier `URGENT > HIGH > MEDIUM > LOW`, puis par échéance croissante, valeurs nulles en dernier et égalités stables. Généraliser `sortProjectTasks` en `modules/tasks/sort-tasks-by-priority.ts` (`sortTasksByPriority`) et migrer le projet ainsi que son test, sans alias.
+- **Justification** : montrer le travail restant dans un ordre prévisible et identique entre les deux contextes. Le tri porte sur une copie sans modifier le cache. Le sous-titre précise « Par ordre de priorité, puis d’échéance » ; les tests couvrent ensemble le filtre et l'ordre.
+
+### D57 — Carte de tâche personnelle fidèle et accessible (Maquette + Choix, #13)
+
+- **Référence** : `Dashboard.png`, règles D24 et D27 ; WCAG 2.1 AA.
+- **Décision** : conserver titre, description, statut, projet, échéance et nombre réel de commentaires. Réutiliser `formatFrenchCalendarDate`, toujours avec l'année, et annoncer « Aucune échéance » si nulle. Partager les libellés et couleurs via `modules/tasks/task-status.ts`. Le lien « Voir » a un nom accessible qui identifie sa tâche ; les métadonnées sont nommées et les icônes décoratives.
+- **Justification** : ne pas fabriquer d'assignation ou de compteur, préserver les contrastes AA et le jour calendaire de l'API. Les cartes restent sur une colonne et les textes se replient ; sur mobile, l'action de 48 px occupe toute la largeur.
+
+### D58 — Accès direct au contexte chargé côté client (Choix, #13)
+
+- **Référence** : critère #13 d'accès au contexte ; décision explicite du porteur du projet ; tâches rendues après leur requête navigateur.
+- **Décision** : « Voir » ouvre `/projects/[projectId]#task-[taskId]`. Chaque carte du projet porte cet identifiant stable, `tabIndex={-1}`, une marge de défilement et un focus visible. Après chargement, le projet fait défiler et focalise la cible une seule fois ; les relectures ne déplacent plus le focus.
+- **Justification** : l'ancre native peut être cherchée avant l'existence de la carte. Le traitement vérifie que la cible appartient aux tâches reçues, sans route de tâche inventée. Une cible absente ne provoque pas de déplacement. Le refus neutre existant du projet reste applicable après perte d'accès (B12).
+
+### B20 — Tri alphabétique des priorités du dashboard (Backend, #13)
+
+- **Référence** : `src/backend/src/controllers/dashboardController.ts:92-100`, `orderBy: [{ priority: "asc" }, { dueDate: "asc" }]` ; priorité stockée comme chaîne Prisma. Le commentaire `URGENT, HIGH, MEDIUM, LOW` ne change pas cet ordre alphabétique.
+- **Impact** : l'ordre croissant des chaînes n'est pas l'ordre d'urgence métier demandé, et diffère aussi du tri décroissant de la liste du projet (B07).
+- **Décision** : backend conservé ; appliquer côté client le tri partagé de D56, sur décision du porteur du projet. Aucun ajustement de l'API ni ordre implicite.
+
+### B21 — Tous les statuts renvoyés dans les assignations (Backend + Choix, #13)
+
+- **Référence** : `src/backend/src/controllers/dashboardController.ts:50-57`, filtre limité à `assignees.some.userId`, sans condition de statut.
+- **Impact** : la réponse inclut aussi les tâches terminées et annulées, qui ne représentent plus le travail restant de la liste personnelle.
+- **Décision** : backend conservé ; masquer `DONE` et `CANCELLED` dans cette vue sur décision explicite du porteur du projet (D56). Le détail du projet continue à montrer tous les statuts et la progression conserve sa propre règle D15.

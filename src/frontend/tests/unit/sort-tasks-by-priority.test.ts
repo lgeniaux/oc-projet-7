@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ProjectTask } from "@/modules/projects/project-query";
-import { sortProjectTasks } from "@/modules/projects/sort-project-tasks";
+import { sortTasksByPriority } from "@/modules/tasks/sort-tasks-by-priority";
 
 function task(
   id: string,
@@ -19,7 +19,7 @@ function task(
   };
 }
 
-describe("sortProjectTasks", () => {
+describe("sortTasksByPriority", () => {
   it("orders business priorities before dates, puts missing dates last and leaves the cache unchanged", () => {
     const tasks = [
       task("low", "LOW", "2024-01-01T00:00:00.000Z"),
@@ -30,7 +30,7 @@ describe("sortProjectTasks", () => {
       task("high-earlier", "HIGH", "2026-03-09T00:00:00.000Z"),
     ];
     const originalOrder = tasks.map(({ id }) => id);
-    expect(sortProjectTasks(tasks).map(({ id }) => id)).toEqual([
+    expect(sortTasksByPriority(tasks).map(({ id }) => id)).toEqual([
       "urgent",
       "high-earlier",
       "high-later",
@@ -43,10 +43,10 @@ describe("sortProjectTasks", () => {
 
   it("preserves the server order for equal priority and deadline", () => {
     const tasks = [task("first", "HIGH", null), task("second", "HIGH", null)];
-    expect(sortProjectTasks(tasks).map(({ id }) => id)).toEqual([
+    expect(sortTasksByPriority(tasks).map(({ id }) => id)).toEqual([
       "first",
       "second",
     ]);
-    expect(sortProjectTasks([])).toEqual([]);
+    expect(sortTasksByPriority([])).toEqual([]);
   });
 });
