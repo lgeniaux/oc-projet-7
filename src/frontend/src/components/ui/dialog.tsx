@@ -35,8 +35,11 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
+  closeLabel,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content>) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  closeLabel: string;
+}) {
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
@@ -54,7 +57,7 @@ function DialogContent({
             type="button"
             variant="outline"
             className="absolute top-2 right-2 w-12 border-transparent p-0"
-            aria-label="Fermer la fenêtre de création"
+            aria-label={closeLabel}
           >
             <XIcon aria-hidden="true" className="size-5" />
           </Button>

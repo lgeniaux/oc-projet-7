@@ -14,26 +14,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { accountErrorSchema } from "@/modules/account/schemas";
 import { authenticatedFetch } from "@/modules/auth/authenticated-fetch";
 import { ContributorPicker } from "@/modules/projects/contributor-picker";
 import { projectResponseSchema } from "@/modules/projects/project-query";
 import type { Contributor } from "@/modules/projects/user-search-query";
-
-const creationSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Le titre doit contenir au moins 2 caractères.")
-    .max(100, "Le titre ne peut pas dépasser 100 caractères."),
-  description: z
-    .string()
-    .trim()
-    .max(500, "La description ne peut pas dépasser 500 caractères."),
-});
+import {
+  ProjectFormFields,
+  projectFieldsSchema,
+  type ProjectFields,
+} from "@/modules/projects/project-form-fields";
 
 // The creation response has no userRole, unlike project read responses.
 const creationResponseSchema = z.object({
@@ -44,7 +34,6 @@ const creationResponseSchema = z.object({
     }),
   }),
 });
-type CreationFields = z.infer<typeof creationSchema>;
 
 export function ProjectCreation() {
   const queryClient = useQueryClient();
@@ -62,8 +51,8 @@ export function ProjectCreation() {
     setError,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreationFields>({
-    resolver: zodResolver(creationSchema),
+  } = useForm<ProjectFields>({
+    resolver: zodResolver(projectFieldsSchema),
     defaultValues: { name: "", description: "" },
   });
 
@@ -78,7 +67,7 @@ export function ProjectCreation() {
     setOpen(next);
   }
 
-  async function onSubmit(fields: CreationFields) {
+  async function onSubmit(fields: ProjectFields) {
     setServerError("");
     setContributorError("");
     setSuccess(null);
@@ -160,7 +149,7 @@ export function ProjectCreation() {
             </Button>
           </DialogTrigger>
         </div>
-        <DialogContent>
+        <DialogContent closeLabel="Fermer la fenêtre de création">
           <DialogTitle>Créer un projet</DialogTitle>
           <DialogDescription>
             Les champs marqués d&apos;un astérisque sont obligatoires.
@@ -171,65 +160,9 @@ export function ProjectCreation() {
             className="space-y-6"
           >
             <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
-              <div>
-                <Label htmlFor="project-name" className="mb-1">
-                  Titre <span aria-hidden="true">*</span>
-                </Label>
-                <Input
-                  id="project-name"
-                  aria-required="true"
-                  aria-invalid={!!errors.name}
-                  aria-describedby={
-                    errors.name
-                      ? "project-name-help project-name-error"
-                      : "project-name-help"
-                  }
-                  {...register("name")}
-                />
-                <p id="project-name-help" className="mt-1 text-sm text-muted">
-                  Entre 2 et 100 caractères.
-                </p>
-                {errors.name && (
-                  <p
-                    id="project-name-error"
-                    role="alert"
-                    className="mt-1 text-sm text-link"
-                  >
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="project-description" className="mb-1">
-                  Description
-                </Label>
-                <Textarea
-                  id="project-description"
-                  aria-invalid={!!errors.description}
-                  aria-describedby={
-                    errors.description
-                      ? "project-description-help project-description-error"
-                      : "project-description-help"
-                  }
-                  {...register("description")}
-                />
-                <p
-                  id="project-description-help"
-                  className="mt-1 text-sm text-muted"
-                >
-                  Facultative, 500 caractères maximum.
-                </p>
-                {errors.description && (
-                  <p
-                    id="project-description-error"
-                    role="alert"
-                    className="mt-1 text-sm text-link"
-                  >
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
+              <ProjectFormFields register={register} errors={errors} />
               <ContributorPicker
+                description="Les personnes ajoutées auront le rôle de contributeur. Vous serez propriétaire du projet."
                 selected={selected}
                 onChange={setSelected}
                 error={contributorError}
