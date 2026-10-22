@@ -10,3 +10,12 @@ export function formatFrenchCalendarDate(value: string): string {
     timeZone: "UTC",
   }).format(date);
 }
+
+/**
+ * Turn a date input value into the instant that Express stores for this calendar day.
+ * @param day - A `YYYY-MM-DD` value from a date input.
+ * @returns UTC midnight of this day, read back by `formatFrenchCalendarDate`.
+ */
+export function toCalendarDateTime(day: string): string {
+  return `${day}T00:00:00.000Z`;
+}

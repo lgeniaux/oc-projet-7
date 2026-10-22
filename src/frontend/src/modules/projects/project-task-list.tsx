@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,39 +11,36 @@ import {
   useProjectTasksQuery,
 } from "@/modules/projects/project-query";
 import { sortProjectTasks } from "@/modules/projects/sort-project-tasks";
+import { TaskActions } from "@/modules/tasks/task-actions";
 import { TaskComments } from "@/modules/tasks/task-comments";
-
-const statuses = {
-  TODO: { label: "À faire", className: "bg-status-todo-soft text-status-todo" },
-  IN_PROGRESS: {
-    label: "En cours",
-    className: "bg-status-progress-soft text-status-progress",
-  },
-  DONE: {
-    label: "Terminée",
-    className: "bg-status-done-soft text-status-done",
-  },
-  CANCELLED: { label: "Annulée", className: "bg-border text-text" },
-};
+import { TaskCreation } from "@/modules/tasks/task-creation";
+import { taskStatuses } from "@/modules/tasks/task-status";
 
 function ProjectTaskCard({
   projectId,
   task,
+  onDeleted,
 }: {
   projectId: string;
   task: ProjectTask;
+  onDeleted: (title: string) => void;
 }) {
-  const status = statuses[task.status];
+  const status = taskStatuses[task.status];
 
   return (
     <li className="min-w-0 rounded-md border border-border bg-surface p-4 sm:p-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="min-w-0 font-heading text-lg font-semibold wrap-anywhere">
-          {task.title}
-        </h3>
-        <span className={`rounded-full px-3 py-1 text-sm ${status.className}`}>
-          {status.label}
-        </span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3 className="min-w-0 font-heading text-lg font-semibold wrap-anywhere">
+            {task.title}
+          </h3>
+          <span
+            className={`rounded-full px-3 py-1 text-sm ${status.className}`}
+          >
+            {status.label}
+          </span>
+        </div>
+        <TaskActions projectId={projectId} task={task} onDeleted={onDeleted} />
       </div>
       <p className="mt-2 wrap-anywhere whitespace-pre-wrap text-muted">
         {task.description || "Aucune description."}
@@ -89,21 +87,40 @@ function ProjectTaskCard({
 
 export function ProjectTaskList({ projectId }: { projectId: string }) {
   const tasks = useProjectTasksQuery(projectId);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const [deletionNotice, setDeletionNotice] = useState("");
+  // The deleted card is gone: keep the focus in the task section.
+  function announceDeletion(title: string) {
+    setDeletionNotice(`Tâche « ${title} » supprimée.`);
+    headingRef.current?.focus();
+  }
 
   return (
     <section
       aria-labelledby="project-tasks-heading"
       className="mt-8 min-w-0 rounded-md border border-border bg-surface p-4 sm:p-6 lg:p-8"
     >
-      <h2
-        id="project-tasks-heading"
-        className="font-heading text-xl font-semibold"
-      >
-        Tâches
-      </h2>
-      <p className="mt-1 text-sm text-muted">
-        Par ordre de priorité, puis d’échéance
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2
+            ref={headingRef}
+            id="project-tasks-heading"
+            tabIndex={-1}
+            className="rounded-sm font-heading text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+          >
+            Tâches
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Par ordre de priorité, puis d’échéance
+          </p>
+        </div>
+        <TaskCreation projectId={projectId} />
+        {deletionNotice && (
+          <p role="status" className="basis-full text-sm wrap-anywhere">
+            {deletionNotice}
+          </p>
+        )}
+      </div>
       {tasks.isPending ? (
         <p role="status" className="mt-6 text-muted">
           Chargement des tâches…
@@ -136,6 +153,7 @@ export function ProjectTaskList({ projectId }: { projectId: string }) {
                     key={task.id}
                     projectId={projectId}
                     task={task}
+                    onDeleted={announceDeletion}
                   />
                 ))}
               </ul>
