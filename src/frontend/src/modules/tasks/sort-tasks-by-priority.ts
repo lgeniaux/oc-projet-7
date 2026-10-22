@@ -1,9 +1,14 @@
-import type { ProjectTask } from "@/modules/projects/project-query";
+type PrioritizedTask = {
+  priority: "URGENT" | "HIGH" | "MEDIUM" | "LOW";
+  dueDate: string | null;
+};
 
 const priorityRank = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
 
 /** Sort a copy, keeping the shared query cache in its original order. */
-export function sortProjectTasks(tasks: ProjectTask[]): ProjectTask[] {
+export function sortTasksByPriority<T extends PrioritizedTask>(
+  tasks: T[],
+): T[] {
   return tasks.toSorted((first, second) => {
     const priority =
       priorityRank[first.priority] - priorityRank[second.priority];

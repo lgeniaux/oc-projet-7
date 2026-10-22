@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   type ProjectTask,
   useProjectTasksQuery,
 } from "@/modules/projects/project-query";
-import { sortProjectTasks } from "@/modules/projects/sort-project-tasks";
+import { sortTasksByPriority } from "@/modules/tasks/sort-tasks-by-priority";
 import { TaskActions } from "@/modules/tasks/task-actions";
 import { TaskComments } from "@/modules/tasks/task-comments";
 import { TaskCreation } from "@/modules/tasks/task-creation";
@@ -28,7 +28,11 @@ function ProjectTaskCard({
   const status = taskStatuses[task.status];
 
   return (
-    <li className="min-w-0 rounded-md border border-border bg-surface p-4 sm:p-6">
+    <li
+      id={`task-${task.id}`}
+      tabIndex={-1}
+      className="min-w-0 scroll-mt-6 rounded-md border border-border bg-surface p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link sm:p-6"
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 className="min-w-0 font-heading text-lg font-semibold wrap-anywhere">
@@ -87,6 +91,21 @@ function ProjectTaskCard({
 
 export function ProjectTaskList({ projectId }: { projectId: string }) {
   const tasks = useProjectTasksQuery(projectId);
+  const focusedHash = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!tasks.data) return;
+    const hash = window.location.hash;
+    if (hash === focusedHash.current) return;
+    const task = tasks.data.find(({ id }) => hash === `#task-${id}`);
+    if (!task) return;
+    const target = document.getElementById(`task-${task.id}`);
+    if (!target) return;
+    focusedHash.current = hash;
+    target.scrollIntoView({ block: "start" });
+    target.focus({ preventScroll: true });
+  }, [tasks.data]);
+
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [deletionNotice, setDeletionNotice] = useState("");
   // The deleted card is gone: keep the focus in the task section.
@@ -148,7 +167,7 @@ export function ProjectTaskList({ projectId }: { projectId: string }) {
               <p className="mt-6 text-muted">Aucune tâche pour ce projet.</p>
             ) : (
               <ul aria-label="Tâches du projet" className="mt-8 space-y-4">
-                {sortProjectTasks(tasks.data).map((task) => (
+                {sortTasksByPriority(tasks.data).map((task) => (
                   <ProjectTaskCard
                     key={task.id}
                     projectId={projectId}
