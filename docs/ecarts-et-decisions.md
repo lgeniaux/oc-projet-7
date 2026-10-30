@@ -284,6 +284,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 ### D31 — Création depuis la liste et modale accessible (Maquette + Choix, #8)
 
+- **Statut** : remplacée en partie par D59 au ticket #14 : le dashboard propose aussi la création ; le reste de la décision s'applique.
 - **Référence** : `Projets.png`, `Dashboard.png`, `Modale création projet.png` ; périmètre explicite du ticket.
 - **Décision** : ajouter le bouton avec plus décoratif uniquement sur `/projects`, même si le dashboard possède également ce bouton dans sa maquette. Il reste disponible dans les états vide, chargement et erreur. La modale utilise `Dialog` shadcn/ui adapté à Abricot, avec fermeture X nommée en français, focus contenu, Échap, retour du focus et défilement interne responsive.
 - **Justification** : le parcours de liste permet immédiatement la création sans étendre le ticket au dashboard. Radix fournit les comportements clavier plutôt qu'un contrôle artisanal. Les primitives inutilisées du générateur et son import erroné `cn` sont retirés ; aucun paquet supplémentaire n'est conservé.
@@ -494,6 +495,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 ### D54 — Liste personnelle sans contrôles hors périmètre (Maquette + Choix, #13)
 
+- **Statut** : remplacée par D59 au ticket #14 pour les onglets et « Créer un projet » ; la recherche reste absente (fonction optionnelle du sujet).
 - **Référence** : `sujet/maquette/Dashboard.png` ; spécifications §4 ; tickets #14 et #15.
 - **Décision** : remplacer le texte d'attente du dashboard par « Mes tâches assignées ». Ne pas ajouter les onglets Liste/Kanban, la recherche ou « Créer un projet » sur cette page. Le parcours de création existant reste sur `/projects`.
 - **Justification** : livrer la liste réelle demandée sans faux contrôle ni extension aux autres vues prévues par les tickets suivants.
@@ -533,3 +535,18 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : `src/backend/src/controllers/dashboardController.ts:50-57`, filtre limité à `assignees.some.userId`, sans condition de statut.
 - **Impact** : la réponse inclut aussi les tâches terminées et annulées, qui ne représentent plus le travail restant de la liste personnelle.
 - **Décision** : backend conservé ; masquer `DONE` et `CANCELLED` dans cette vue sur décision explicite du porteur du projet (D56). Le détail du projet continue à montrer tous les statuts et la progression conserve sa propre règle D15.
+
+## Kanban mensuel du tableau de bord
+
+### D59 — Onglets de vues et création depuis le dashboard (Maquette + Choix, #14)
+
+- **Référence** : `Dashboard.png` et `Dashboard vue Kanban.png` (onglets « Liste » et « Kanban », bouton « + Créer un projet ») ; spécifications §4.
+- **Décision** : les vues utilisent `Tabs` shadcn/ui (Radix) : « Liste » est choisie par défaut, les flèches changent d'onglet et le choix n'est pas conservé dans l'URL. Le panneau Kanban reste monté mais masqué, pour garder le mois affiché pendant un changement d'onglet. L'en-tête du dashboard réutilise `ProjectCreation`, comme `/projects`. La recherche « Rechercher une tâche » de la maquette n'est pas ajoutée.
+- **Justification** : Radix fournit le rôle `tablist`, la navigation au clavier et le lien entre onglet et panneau. Les deux vues lisent le même cache : un changement d'onglet ne relance pas de requête. La création réutilise un parcours déjà testé. La recherche et le filtrage sont optionnels dans les spécifications (§4) ; un champ sans effet serait trompeur.
+- **Remplace** : D54 pour les onglets et la création.
+
+### D60 — Mois calendaire, navigation et colonnes du Kanban (Sujet + Choix, #14)
+
+- **Référence** : spécifications §4 (« tâches du mois par statut ») ; `Dashboard vue Kanban.png` (colonnes « À faire », « En cours », « Terminées » avec compteurs) ; B08, B19 et D44.
+- **Décision** : le Kanban lit `['dashboard', 'assigned-tasks']`, déjà utilisé par la liste. Il ouvre le mois courant du navigateur et propose « Mois précédent » et « Mois suivant ». Une tâche appartient au mois de son jour calendaire renvoyé par l'API (`YYYY-MM-DD`), comme dans son affichage. Chaque colonne garde l'ordre métier partagé (`sortTasksByPriority`). Les tâches sans échéance et les tâches `CANCELLED` sont exclues. Le compteur est le nombre de cartes de la colonne. Il n'y a pas de drag-and-drop : le statut change dans le formulaire de la tâche.
+- **Justification** : le seed date toutes ses tâches de 2024, donc un mois fixe laisserait le Kanban vide. La navigation permet de consulter les autres mois sans nouvelle route. Le jour calendaire de l'API évite un changement de mois selon le fuseau horaire. Une tâche sans échéance n'a pas de mois, et le sujet ne prévoit que trois statuts. Le drag-and-drop est un bonus du sujet.

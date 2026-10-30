@@ -12,6 +12,8 @@ test("creates a project with a searched contributor and opens it without reloadi
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL("/");
   await page.getByRole("link", { name: "Projets", exact: true }).click();
+  // The dashboard also has this button: wait for the projects page first.
+  await expect(page).toHaveURL("/projects");
   await page
     .getByRole("button", { name: "Créer un projet", exact: true })
     .click();

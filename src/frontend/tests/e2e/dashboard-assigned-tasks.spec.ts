@@ -94,10 +94,13 @@ for (const width of [1440, 375]) {
         exact: true,
       }),
     ).toBeVisible();
-    await expect(dashboard.getByRole("tab")).toHaveCount(0);
+    await expect(
+      dashboard.getByRole("tab", { name: "Liste", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
     await expect(dashboard.getByRole("searchbox")).toHaveCount(0);
-    await expect(dashboard.getByRole("button", { name: /Créer/ })).toHaveCount(
-      0,
+    await expectUsableTarget(
+      dashboard.getByRole("button", { name: "Créer un projet", exact: true }),
+      width,
     );
     await expect(
       assignedTasks.getByText("Terminée", { exact: true }),
