@@ -1,12 +1,20 @@
-import { DashboardAssignedTasks } from "@/modules/dashboard/dashboard-assigned-tasks";
 import { DashboardGreeting } from "@/modules/dashboard/dashboard-greeting";
+import { DashboardViews } from "@/modules/dashboard/dashboard-views";
+import { ProjectCreation } from "@/modules/projects/project-creation";
 
 export default function DashboardPage() {
   return (
     <>
-      <h1 className="font-heading text-2xl font-semibold">Tableau de bord</h1>
-      <DashboardGreeting />
-      <DashboardAssignedTasks />
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+        <div>
+          <h1 className="font-heading text-2xl font-semibold">
+            Tableau de bord
+          </h1>
+          <DashboardGreeting />
+        </div>
+        <ProjectCreation />
+      </div>
+      <DashboardViews />
     </>
   );
 }

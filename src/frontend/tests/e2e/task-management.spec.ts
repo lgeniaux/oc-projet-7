@@ -16,6 +16,8 @@ test("creates an assigned task, changes its status and deletes it", async ({
 
   // Use a disposable project: the seed data stays unchanged.
   await page.getByRole("link", { name: "Projets", exact: true }).click();
+  // The dashboard also has this button: wait for the projects page first.
+  await expect(page).toHaveURL("/projects");
   await page
     .getByRole("button", { name: "Créer un projet", exact: true })
     .click();

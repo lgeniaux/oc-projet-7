@@ -13,6 +13,8 @@ test("edits contributors and project fields then confirms deletion without reloa
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page).toHaveURL("/");
   await page.getByRole("link", { name: "Projets", exact: true }).click();
+  // The dashboard also has this button: wait for the projects page first.
+  await expect(page).toHaveURL("/projects");
   await page
     .getByRole("button", { name: "Créer un projet", exact: true })
     .click();
