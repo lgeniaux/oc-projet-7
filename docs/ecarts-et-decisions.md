@@ -550,3 +550,17 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : spécifications §4 (« tâches du mois par statut ») ; `Dashboard vue Kanban.png` (colonnes « À faire », « En cours », « Terminées » avec compteurs) ; B08, B19 et D44.
 - **Décision** : le Kanban lit `['dashboard', 'assigned-tasks']`, déjà utilisé par la liste. Il ouvre le mois courant du navigateur et propose « Mois précédent » et « Mois suivant ». Une tâche appartient au mois de son jour calendaire renvoyé par l'API (`YYYY-MM-DD`), comme dans son affichage. Chaque colonne garde l'ordre métier partagé (`sortTasksByPriority`). Les tâches sans échéance et les tâches `CANCELLED` sont exclues. Le compteur est le nombre de cartes de la colonne. Il n'y a pas de drag-and-drop : le statut change dans le formulaire de la tâche.
 - **Justification** : le seed date toutes ses tâches de 2024, donc un mois fixe laisserait le Kanban vide. La navigation permet de consulter les autres mois sans nouvelle route. Le jour calendaire de l'API évite un changement de mois selon le fuseau horaire. Une tâche sans échéance n'a pas de mois, et le sujet ne prévoit que trois statuts. Le drag-and-drop est un bonus du sujet.
+
+## Projets du tableau de bord
+
+### D61 — Vue projets sans maquette, classée par urgence (Sujet + Maquette + Choix, #15)
+
+- **Référence** : spécifications §4 (« vue liste des projets dans lesquels l'utilisateur a des tâches assignées, les plus urgents d'abord ») ; aucune maquette dédiée ; `Projets.png` et `Dashboard.png` pour le langage visuel.
+- **Décision** : ajouter un troisième onglet « Projets ». L'urgence d'un projet est celle de sa tâche ouverte assignée la plus urgente, avec la règle de D56 (priorité, puis échéance). Les projets sans tâche ouverte viennent en dernier. Chaque carte montre la progression des tâches assignées, le nombre de tâches ouvertes, la prochaine tâche (statut, priorité, échéance) et un lien vers le projet. La progression complète du projet et l'équipe ne sont pas affichées.
+- **Justification** : le prochain travail utile est visible sans calcul inventé, avec l'ordre déjà utilisé par la liste. Le comparateur `compareTasksByPriority` et le filtre `getOpenAssignedTasks` sont partagés, sans nouvelle règle. La progression complète demanderait une lecture par projet ; elle reste sur `/projects`.
+
+### B20 — Projets du dashboard triés par nom (Backend, #15)
+
+- **Référence** : `src/backend/src/controllers/dashboardController.ts:151-245`, `orderBy: { name: "asc" }` pour les projets ; tâches incluses triées par chaîne de priorité croissante (même problème que B18).
+- **Impact** : l'ordre de l'API ne répond pas à « les plus urgents d'abord ».
+- **Décision** : backend conservé ; ordonner côté client selon D61. L'ordre par nom de l'API départage seulement les égalités.

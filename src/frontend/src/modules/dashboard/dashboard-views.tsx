@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, SquareCheckBig } from "lucide-react";
+import { CalendarDays, Folder, SquareCheckBig } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardAssignedTasks } from "@/modules/dashboard/dashboard-assigned-tasks";
 import { DashboardMonthKanban } from "@/modules/dashboard/dashboard-month-kanban";
+import { DashboardProjects } from "@/modules/dashboard/dashboard-projects";
 
 /** Switch between the dashboard views. The view is not kept in the URL. */
 export function DashboardViews() {
@@ -25,6 +26,10 @@ export function DashboardViews() {
           <CalendarDays aria-hidden="true" />
           Kanban
         </TabsTrigger>
+        <TabsTrigger value="projects">
+          <Folder aria-hidden="true" />
+          Projets
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="list">
         <DashboardAssignedTasks />
@@ -32,6 +37,9 @@ export function DashboardViews() {
       {/* Stay mounted, but hidden, so that the chosen month survives a tab change. */}
       <TabsContent value="kanban" forceMount hidden={selectedView !== "kanban"}>
         <DashboardMonthKanban />
+      </TabsContent>
+      <TabsContent value="projects">
+        <DashboardProjects />
       </TabsContent>
     </Tabs>
   );
