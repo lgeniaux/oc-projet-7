@@ -98,33 +98,28 @@ describe("dashboard projects", () => {
 
     const [websiteCard, archiveCard] = within(list).getAllByRole("listitem");
     const card = within(websiteCard);
-    expect(card.getByText("Tâches ouvertes").nextSibling).toHaveTextContent(
-      "2",
-    );
-    expect(card.getByText("Prochaine tâche").nextSibling).toHaveTextContent(
-      "Rédiger les contenusEn cours",
-    );
-    expect(card.getByText("Priorité").nextSibling).toHaveTextContent("Haute");
+    // The next task is the most urgent open one, not the urgent finished one.
+    expect(card.getByText("Rédiger les contenus")).toBeVisible();
+    expect(card.getByText("Haute")).toBeVisible();
     expect(card.getByText("9 mars 2026")).toHaveAttribute(
       "datetime",
       "2026-03-09",
     );
     expect(card.getByText("1/3 tâches terminées")).toBeVisible();
+    expect(card.getByText("En cours")).toBeVisible();
     expect(
       card.getByRole("progressbar", {
         name: "Mes tâches terminées dans Site vitrine",
       }),
     ).toHaveAttribute("aria-valuenow", "33");
-    expect(
-      card.getByRole("link", { name: "Voir le projet « Site vitrine »" }),
-    ).toHaveAttribute("href", "/projects/site");
+    expect(card.getByRole("link", { name: "Site vitrine" })).toHaveAttribute(
+      "href",
+      "/projects/site",
+    );
 
     expect(
-      within(archiveCard).getByText(
-        "Aucune tâche à faire ou en cours ne vous est assignée dans ce projet.",
-      ),
+      within(archiveCard).getByText("Aucune tâche à faire ou en cours."),
     ).toBeVisible();
-    expect(within(archiveCard).getByText("Aucune description.")).toBeVisible();
 
     const [url, options] = apiFetch.mock.calls[0];
     expect(String(url)).toBe(

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatFrenchCalendarDate } from "@/lib/format-date";
@@ -79,82 +80,103 @@ export function DashboardProjects() {
   );
 }
 
+// Priority badge colors. Each text color reaches WCAG AA on its background.
+const priorityBadgeClassNames = {
+  URGENT: "bg-status-todo text-on-action",
+  HIGH: "bg-brand-soft text-link",
+  MEDIUM: "bg-border text-text",
+  LOW: "border border-border bg-surface text-muted",
+};
+
+/** One project card. The whole card is a link, as on the projects page. */
 function DashboardProjectCard({ project, openTasks }: ProjectByUrgency) {
   const progress = getProjectProgress(project.tasks);
   const nextTask = openTasks.at(0);
+  const headingId = `dashboard-project-${project.id}-heading`;
 
   return (
-    <li className="flex min-w-0 flex-col rounded-md border border-border bg-surface p-4 sm:p-6">
-      <h3 className="font-heading text-lg font-semibold wrap-anywhere">
-        {project.name}
-      </h3>
-      <p className="mt-2 text-sm wrap-anywhere whitespace-pre-wrap text-muted">
-        {project.description || "Aucune description."}
-      </p>
-      <div className="mt-6 space-y-2 text-sm">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-muted">Mes tâches terminées</span>
-          <span>{progress.percentage}%</span>
+    <li className="min-w-0">
+      <Link
+        href={`/projects/${encodeURIComponent(project.id)}`}
+        aria-labelledby={headingId}
+        className="flex h-full min-w-0 flex-col rounded-md border border-border bg-surface p-6 transition-colors hover:border-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link"
+      >
+        <h3
+          id={headingId}
+          className="font-heading text-lg font-semibold wrap-anywhere"
+        >
+          {project.name}
+        </h3>
+        {project.description && (
+          <p className="mt-2 line-clamp-2 text-sm wrap-anywhere text-muted">
+            {project.description}
+          </p>
+        )}
+
+        <div className="mt-6 space-y-2 text-sm">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted">Mes tâches</span>
+            <span>{progress.percentage}%</span>
+          </div>
+          <Progress
+            value={progress.percentage}
+            aria-label={`Mes tâches terminées dans ${project.name}`}
+          />
+          <p className="text-xs text-muted">
+            {progress.done}/{progress.total} tâches terminées
+          </p>
         </div>
-        <Progress
-          value={progress.percentage}
-          aria-label={`Mes tâches terminées dans ${project.name}`}
-        />
-        <p className="text-xs text-muted">
-          {progress.done}/{progress.total} tâches terminées
-        </p>
-      </div>
-      {nextTask ? (
-        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <div className="col-span-2">
-            <dt className="text-muted">Tâches ouvertes</dt>
-            <dd>{openTasks.length}</dd>
+
+        <div className="mt-auto pt-6">
+          <div className="border-t border-border pt-4">
+            <p className="text-xs text-muted">Prochaine tâche</p>
+            {nextTask ? (
+              <>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="min-w-0 font-medium wrap-anywhere">
+                    {nextTask.title}
+                  </span>
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm ${taskStatuses[nextTask.status].className}`}
+                  >
+                    {taskStatuses[nextTask.status].label}
+                  </span>
+                </div>
+                <dl className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <dt className="text-muted">Priorité :</dt>
+                    <dd
+                      className={`rounded-full px-3 py-0.5 text-xs font-medium ${priorityBadgeClassNames[nextTask.priority]}`}
+                    >
+                      {taskPriorities[nextTask.priority]}
+                    </dd>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <dt className="text-muted">Échéance :</dt>
+                    <dd className="flex items-center gap-1.5 whitespace-nowrap">
+                      <CalendarDays
+                        aria-hidden="true"
+                        className="size-4 shrink-0 text-muted"
+                      />
+                      {nextTask.dueDate ? (
+                        <time dateTime={nextTask.dueDate.slice(0, 10)}>
+                          {formatFrenchCalendarDate(nextTask.dueDate)}
+                        </time>
+                      ) : (
+                        "Aucune"
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-muted">
+                Aucune tâche à faire ou en cours.
+              </p>
+            )}
           </div>
-          <div className="col-span-2">
-            <dt className="text-muted">Prochaine tâche</dt>
-            <dd className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="font-medium wrap-anywhere">
-                {nextTask.title}
-              </span>
-              <span
-                className={`rounded-full px-3 py-1 ${taskStatuses[nextTask.status].className}`}
-              >
-                {taskStatuses[nextTask.status].label}
-              </span>
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted">Priorité</dt>
-            <dd>{taskPriorities[nextTask.priority]}</dd>
-          </div>
-          <div>
-            <dt className="text-muted">Échéance</dt>
-            <dd>
-              {nextTask.dueDate ? (
-                <time dateTime={nextTask.dueDate.slice(0, 10)}>
-                  {formatFrenchCalendarDate(nextTask.dueDate)}
-                </time>
-              ) : (
-                "Aucune échéance"
-              )}
-            </dd>
-          </div>
-        </dl>
-      ) : (
-        <p className="mt-6 text-sm text-muted">
-          Aucune tâche à faire ou en cours ne vous est assignée dans ce projet.
-        </p>
-      )}
-      <div className="mt-auto pt-6">
-        <Button asChild className="w-full sm:w-auto sm:min-w-28">
-          <Link
-            href={`/projects/${encodeURIComponent(project.id)}`}
-            aria-label={`Voir le projet « ${project.name} »`}
-          >
-            Voir le projet
-          </Link>
-        </Button>
-      </div>
+        </div>
+      </Link>
     </li>
   );
 }
