@@ -152,7 +152,7 @@ function ProjectDetailsContent({
           >
             Contributeurs
           </h2>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-text">
             {project.data.members.length + 1}{" "}
             {project.data.members.length === 0 ? "personne" : "personnes"}
           </p>

@@ -176,6 +176,8 @@ Sur desktop (à partir de `lg`, 1024 px), l'en-tête tient sur une ligne. Sur mo
 
 La déconnexion est accessible au clavier depuis le menu du compte. Une réponse Express `401` efface la session et renvoie à la connexion avec un message de session expirée annoncé par `role="status"`, sauf le refus métier identifié par `INVALID_CURRENT_PASSWORD`. Le backend utilise aussi `401` pour ce mot de passe actuel incorrect : l'exception ciblée approuvée conserve la session et annonce une erreur sur le champ « Mot de passe actuel », sans effacer la saisie ni quitter le compte. Toutes les autres réponses `401` entraînent une reconnexion. Une panne de profil est aussi annoncée, sans masquer les liens ni inventer une identité. La 404 reprend le logo Abricot, l'accent `link`, un titre sémantique et un lien sombre de retour au tableau de bord ; elle reste publique et fonctionne aussi sans session.
 
+**Corrections de l'audit de livraison (#17)** : le nombre de personnes de la barre de contributeurs utilise `text`, car `muted` sur `border/30` n'atteignait que 4,39:1. Les pastilles radio et les éléments de menu déclarent un contour `solid` : `outline-none` masquait leur focus clavier. Sur les pages de connexion et d'inscription, le lien du logo a le même focus `link` de 2 px que les autres liens. Le logo garde son ratio d'origine (147 × 19) et s'affiche à 250 px de large. Le menu du compte n'est plus modal : le reste de la page n'est plus masqué aux technologies d'assistance pendant que le focus peut y aller. Radix assure toujours les flèches, Échap et le retour du focus à l'avatar.
+
 ## Do's and Don'ts
 
 - Préserver la hiérarchie des maquettes sans compromettre WCAG 2.1 AA ni la lecture sur petit écran.

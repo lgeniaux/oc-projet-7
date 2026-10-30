@@ -53,6 +53,14 @@ test("creates an assigned task, changes its status and deletes it", async ({
     /Bob Dupont/,
   );
   await creation.getByRole("radio", { name: "En cours", exact: true }).click();
+  await page.keyboard.press("Tab");
+  const selectedStatus = creation.getByRole("radio", {
+    name: "En cours",
+    exact: true,
+  });
+  await selectedStatus.focus();
+  await expect(selectedStatus).toHaveCSS("outline-style", "solid");
+  await expect(selectedStatus).toHaveCSS("outline-color", "rgb(173, 71, 6)");
   await creation
     .getByRole("button", { name: "Ajouter une tâche", exact: true })
     .click();

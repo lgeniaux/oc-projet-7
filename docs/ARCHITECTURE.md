@@ -216,13 +216,17 @@ Les tests vivent dans une arborescence séparée du code applicatif.
 - React Testing Library couvre les comportements visibles : validation et soumission des formulaires d'authentification et du compte, partage du profil avec le shell, chargement, erreurs et confirmations, garde sans token, navigation avec token, suppression immédiate à la déconnexion et redirection après `401` avec annonce de session expirée sur la connexion. Les projets couvrent chargement, liste vide, erreur et relance, équipe accessible, progression isolée, liens des cartes et refus du détail ; Vitest couvre le calcul pur de progression.
 - Les modules API peuvent être mockés avec Vitest dans les tests de composants.
 - Playwright couvre les parcours critiques contre Next.js et le backend Express réel avec une base de test maîtrisée.
-- Axe et WAVE complètent les vérifications d'accessibilité.
+- Axe et WAVE complètent les vérifications d'accessibilité. Avant la livraison (#17), un script Playwright jetable a injecté `axe-core` (déjà présent comme dépendance transitive, sans paquet ajouté). Il a audité les règles WCAG 2.0/2.1 A et AA sur chaque page, modale et onglet du dashboard à 375, 768 et 1440 px, avec la console et le débordement horizontal. Résultat après corrections : aucune violation, aucun avertissement console et aucun débordement. Seule la route inexistante journalise sa réponse HTTP 404 (D63). Le test du shell garde l'absence d'avertissement console sur les pages d'authentification.
 
 Les tests restent proportionnés aux risques : privilégier les parcours essentiels, les comportements visibles et les régressions réelles. Choisir le niveau le plus simple qui donne confiance, sans dupliquer chaque cas aux niveaux unitaire, composant et E2E ni viser 100 % de couverture.
 
 Le socle utilise ESLint (configuration Next.js), Prettier avec `prettier-plugin-tailwindcss`, Vitest + jsdom + React Testing Library et Playwright. Les tests vivent sous `src/frontend/tests/{unit,component,e2e}`. Playwright lance Next.js sur `localhost:8001` ; les parcours authentifiés exigent aussi Express réel sur `localhost:8000` et une base de test maîtrisée. Les parcours du shell et l'ouverture d'un projet utilisent le compte de test public du seed (`alice@example.com`, documenté dans le README backend), sans le modifier. Le shell couvre connexion, navigation clavier, lien d'évitement, déconnexion, `401`, routes sans token et 404, avec des largeurs de 375, 768 et 1440 px ; le parcours projets ouvre une carte réelle et retrouve son nom dans le détail. Le parcours compte inscrit un utilisateur neuf avec un e-mail unique, puis modifie uniquement son profil et son mot de passe ; il ne modifie aucun compte du seed. Le test de présentation reste indépendant du backend. Les scripts `lint`, `typecheck`, `test`, `test:e2e`, `build` et `format:check` sont exécutés depuis `src/frontend`.
 
 Le fichier `src/frontend/.env.example` documente `NEXT_PUBLIC_API_URL` : URL Express visible du navigateur. En développement, Next.js utilise `localhost:8001`, seule origine frontend autorisée par le CORS Express inchangé ; le déploiement exige une décision distincte sur l'origine de production.
+
+L'environnement complet demande Node 22.22.2 ou plus dans la branche 22, ou Node 24.15.0 ou plus dans la branche 24. Next.js seul accepte Node 20.9, mais les dépendances de test verrouillées (`jsdom`) exigent ces versions. L'installation complète a été vérifiée depuis un clone neuf avec Node 24.18.0 (README).
+
+Le menu du compte (`DropdownMenu` d'`AppShell`) n'est pas modal (`modal={false}`). Les images des pages d'authentification sont chargées avec `loading="eager"`, l'option recommandée par Next.js 16 à la place de `priority`, dépréciée.
 
 ## Gestion des divergences
 

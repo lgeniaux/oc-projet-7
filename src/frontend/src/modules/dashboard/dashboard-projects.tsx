@@ -105,12 +105,12 @@ function DashboardProjectCard({ project, openTasks }: ProjectByUrgency) {
         </p>
       </div>
       {nextTask ? (
-        <dl className="mt-6 space-y-3 text-sm">
-          <div>
+        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div className="col-span-2">
             <dt className="text-muted">Tâches ouvertes</dt>
             <dd>{openTasks.length}</dd>
           </div>
-          <div>
+          <div className="col-span-2">
             <dt className="text-muted">Prochaine tâche</dt>
             <dd className="mt-1 flex flex-wrap items-center gap-2">
               <span className="font-medium wrap-anywhere">
@@ -123,23 +123,21 @@ function DashboardProjectCard({ project, openTasks }: ProjectByUrgency) {
               </span>
             </dd>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-3">
-            <div>
-              <dt className="text-muted">Priorité</dt>
-              <dd>{taskPriorities[nextTask.priority]}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Échéance</dt>
-              <dd>
-                {nextTask.dueDate ? (
-                  <time dateTime={nextTask.dueDate.slice(0, 10)}>
-                    {formatFrenchCalendarDate(nextTask.dueDate)}
-                  </time>
-                ) : (
-                  "Aucune échéance"
-                )}
-              </dd>
-            </div>
+          <div>
+            <dt className="text-muted">Priorité</dt>
+            <dd>{taskPriorities[nextTask.priority]}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Échéance</dt>
+            <dd>
+              {nextTask.dueDate ? (
+                <time dateTime={nextTask.dueDate.slice(0, 10)}>
+                  {formatFrenchCalendarDate(nextTask.dueDate)}
+                </time>
+              ) : (
+                "Aucune échéance"
+              )}
+            </dd>
           </div>
         </dl>
       ) : (

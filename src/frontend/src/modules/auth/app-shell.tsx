@@ -111,7 +111,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
               })}
             </ul>
           </nav>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger
               aria-label="Menu du compte"
               className={`flex size-14 shrink-0 items-center justify-center rounded-full text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link ${
