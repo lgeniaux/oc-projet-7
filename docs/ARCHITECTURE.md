@@ -184,6 +184,14 @@ Les tests unitaires couvrent le filtre et l'ordre commun, dont les égalités et
 
 Les tests unitaires couvrent les limites de mois et d'année, les fuseaux extrêmes du mois courant, l'exclusion des tâches sans échéance ou annulées et l'ordre des colonnes. Le test de composant couvre la répartition, les compteurs, le changement de mois et la conservation du mois après un changement d'onglet sans seconde requête. Playwright crée par API un projet jetable avec deux tâches du mois courant assignées à Alice. Il passe au Kanban avec la flèche du clavier, vérifie les colonnes et les compteurs, change de mois, ouvre une tâche au clavier et vérifie l'absence de débordement à 1440 et 375 px. Le projet est supprimé dans le nettoyage. Les décisions sont consignées en D59–D60.
 
+#### Projets avec des tâches assignées
+
+`dashboard-projects.tsx` forme le troisième onglet. `projects-with-tasks-query.ts` lit `GET /dashboard/projects-with-tasks` sous la clé `['dashboard', 'projects-with-tasks']`, avec le même transport, la même fraîcheur d'une minute et la même absence de relance automatique que la liste. Zod valide le nom, la description et les tâches consommées. Express renvoie seulement les projets où l'utilisateur a une tâche assignée, avec ces seules tâches, mais trie les projets par nom (B20). Les écritures de tâches invalident déjà le préfixe `['dashboard']`, donc la vue suit les créations, modifications et suppressions.
+
+`getProjectsByUrgency` calcule les tâches ouvertes de chaque projet avec `getOpenAssignedTasks`, rendue générique pour ce second usage. Elle trie ensuite les projets par leur tâche ouverte la plus urgente avec `compareTasksByPriority`, le comparateur extrait de `sortTasksByPriority`. Les projets sans tâche ouverte viennent en dernier ; les égalités gardent l'ordre de l'API. Chaque carte montre la progression des tâches assignées (`getProjectProgress`, sans les annulées), le nombre de tâches ouvertes, la prochaine tâche avec statut, priorité et échéance, et un lien « Voir le projet ».
+
+Le test unitaire couvre l'ordre, les égalités, les projets sans tâche ouverte et l'absence de mutation du cache. Le test de composant couvre le chargement, les données d'une carte, le lien, l'état vide, les erreurs et la relance. Playwright crée par API un projet jetable avec une tâche urgente assignée à Alice. Il atteint l'onglet « Projets » aux flèches et vérifie que ce projet précède un projet du seed. Il ouvre ensuite le projet au clavier et vérifie l'absence de débordement à 1440 et 375 px. Les décisions sont consignées en D61 et B20.
+
 ## Données et formulaires
 
 - `AppQueryProvider` (`modules/auth/app-query-provider.tsx`) fournit TanStack Query uniquement dans la branche authentifiée d'`AppShell`, après lecture du token. Le layout `app/(app)` reste serveur ; les pages publiques ne montent pas ce provider.
