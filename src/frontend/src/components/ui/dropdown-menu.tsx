@@ -52,7 +52,7 @@ function DropdownMenuItem({
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
       className={cn(
-        "flex min-h-12 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm outline-none select-none focus:bg-background focus-visible:outline-2 focus-visible:outline-link data-highlighted:bg-background [&_svg]:size-4 [&_svg]:shrink-0",
+        "flex min-h-12 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm outline-none select-none focus:bg-background focus-visible:outline-2 focus-visible:outline-link focus-visible:outline-solid data-highlighted:bg-background [&_svg]:size-4 [&_svg]:shrink-0",
         className,
       )}
       {...props}
@@ -69,7 +69,7 @@ function DropdownMenuCheckboxItem({
     <DropdownMenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       className={cn(
-        "flex min-h-12 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm outline-none select-none focus:bg-background focus-visible:outline-2 focus-visible:outline-link data-highlighted:bg-background",
+        "flex min-h-12 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm outline-none select-none focus:bg-background focus-visible:outline-2 focus-visible:outline-link focus-visible:outline-solid data-highlighted:bg-background",
         className,
       )}
       {...props}

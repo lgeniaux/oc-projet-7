@@ -564,3 +564,17 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : `src/backend/src/controllers/dashboardController.ts:151-245`, `orderBy: { name: "asc" }` pour les projets ; tâches incluses triées par chaîne de priorité croissante (même problème que B18).
 - **Impact** : l'ordre de l'API ne répond pas à « les plus urgents d'abord ».
 - **Décision** : backend conservé ; ordonner côté client selon D61. L'ordre par nom de l'API départage seulement les égalités.
+
+## Qualité de livraison
+
+### D62 — Menu du compte non modal (Choix, #17)
+
+- **Référence** : audit axe (`aria-hidden-focus`) sur le menu du compte ouvert ; WCAG 4.1.2.
+- **Décision** : passer le `DropdownMenu` du compte en `modal={false}`.
+- **Justification** : en mode modal, Radix masquait le reste de la page aux technologies d'assistance alors qu'un élément de cette zone restait focalisable. Le mode non modal garde les flèches, Échap et le retour du focus à l'avatar, sans contrôle écrit à la main.
+
+### D63 — Erreur console d'une route inexistante conservée (Sujet + Choix, #17)
+
+- **Référence** : fiche d'autoévaluation (« aucune erreur … dans la console ») ; page 404 obligatoire.
+- **Décision** : garder le code HTTP 404 de Next.js pour une route inexistante. Le navigateur journalise alors « Failed to load resource » pour ce document, seule erreur console relevée par l'audit.
+- **Justification** : ce message est le diagnostic normal d'une réponse 404 correcte. Le masquer demanderait une réponse 200 trompeuse pour les robots et les outils. Aucun autre parcours ne produit d'erreur ni d'avertissement console.

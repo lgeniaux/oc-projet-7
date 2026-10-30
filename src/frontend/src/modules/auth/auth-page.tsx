@@ -26,13 +26,18 @@ export function AuthPage({
   return (
     <main className="grid min-h-screen lg:grid-cols-[39%_61%]">
       <section className="flex min-h-screen flex-col bg-background px-6 py-10 sm:px-10 lg:px-8 lg:py-20">
-        <Link href="/" aria-label="Abricot, accueil" className="mx-auto block">
+        <Link
+          href="/"
+          aria-label="Abricot, accueil"
+          className="mx-auto block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-link"
+        >
           <Image
             src="/abricot-logo.svg"
             alt=""
-            width={250}
-            height={34}
-            priority
+            width={147}
+            height={19}
+            className="h-auto w-[250px]"
+            loading="eager"
           />
         </Link>
 
@@ -54,7 +59,14 @@ export function AuthPage({
         </p>
       </section>
       <div className="relative hidden lg:block" aria-hidden="true">
-        <Image src={image} alt="" fill sizes="61vw" className="object-cover" />
+        <Image
+          src={image}
+          alt=""
+          fill
+          sizes="61vw"
+          className="object-cover"
+          loading="eager"
+        />
       </div>
     </main>
   );

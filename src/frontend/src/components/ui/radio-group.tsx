@@ -28,7 +28,7 @@ function RadioGroupItem({
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-transparent px-4 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-current",
+        "inline-flex min-h-11 items-center gap-1.5 rounded-full border-2 border-transparent px-4 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-link focus-visible:outline-solid disabled:cursor-not-allowed disabled:opacity-60 data-[state=checked]:border-current",
         className,
       )}
       {...props}

@@ -3,6 +3,32 @@ import { expect, test } from "@playwright/test";
 const apiURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 for (const width of [375, 768, 1440]) {
+  test(`auth pages load without console warnings and show the logo focus at ${width}px`, async ({
+    page,
+  }) => {
+    const diagnostics: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "warning" || message.type() === "error") {
+        diagnostics.push(message.text());
+      }
+    });
+    page.on("pageerror", (error) => diagnostics.push(error.message));
+    await page.setViewportSize({ width, height: 900 });
+
+    for (const path of ["/login", "/register"]) {
+      await page.goto(path);
+      const home = page.getByRole("link", { name: "Abricot, accueil" });
+      await page.keyboard.press("Tab");
+      await expect(home).toBeFocused();
+      await expect(home).toHaveCSS("outline-style", "solid");
+      await expect(home).toHaveCSS("outline-color", "rgb(173, 71, 6)");
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(width);
+    }
+    expect(diagnostics).toEqual([]);
+  });
+
   test(`login, navigation and sign-out at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/login");
@@ -42,6 +68,17 @@ for (const width of [375, 768, 1440]) {
     await expect(
       page.getByRole("menuitem", { name: "Mon compte" }),
     ).toBeFocused();
+    await expect(page.locator("#main-content")).not.toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    await expect(
+      page.locator("#main-content").locator(".."),
+    ).not.toHaveAttribute("aria-hidden", "true");
+    await expect(page.getByRole("menuitem", { name: "Mon compte" })).toHaveCSS(
+      "outline-style",
+      "solid",
+    );
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL("/account");
     await expect(
