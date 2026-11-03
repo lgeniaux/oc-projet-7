@@ -555,6 +555,7 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 
 ### D61 — Vue projets sans maquette, classée par urgence (Sujet + Maquette + Choix, #15)
 
+- **Statut** : contenu des cartes remplacé par D64 ; l'onglet et l'ordre par urgence restent applicables.
 - **Référence** : spécifications §4 (« vue liste des projets dans lesquels l'utilisateur a des tâches assignées, les plus urgents d'abord ») ; aucune maquette dédiée ; `Projets.png` et `Dashboard.png` pour le langage visuel.
 - **Décision** : ajouter un troisième onglet « Projets ». L'urgence d'un projet est celle de sa tâche ouverte assignée la plus urgente, avec la règle de D56 (priorité, puis échéance). Les projets sans tâche ouverte viennent en dernier. Chaque carte montre la progression des tâches assignées, le nombre de tâches ouvertes, la prochaine tâche (statut, priorité, échéance) et un lien vers le projet. La progression complète du projet et l'équipe ne sont pas affichées.
 - **Justification** : le prochain travail utile est visible sans calcul inventé, avec l'ordre déjà utilisé par la liste. Le comparateur `compareTasksByPriority` et le filtre `getOpenAssignedTasks` sont partagés, sans nouvelle règle. La progression complète demanderait une lecture par projet ; elle reste sur `/projects`.
@@ -564,6 +565,13 @@ Types : **Maquette** (écart visuel ou fonctionnel avec `sujet/maquette`), **Suj
 - **Référence** : `src/backend/src/controllers/dashboardController.ts:151-245`, `orderBy: { name: "asc" }` pour les projets ; tâches incluses triées par chaîne de priorité croissante (même problème que B18).
 - **Impact** : l'ordre de l'API ne répond pas à « les plus urgents d'abord ».
 - **Décision** : backend conservé ; ordonner côté client selon D61. L'ordre par nom de l'API départage seulement les égalités.
+
+### D64 — Cartes de projet du dashboard allégées (Choix, #15)
+
+- **Référence** : D61 ; retour du porteur du projet (cartes trop chargées) ; `Projets.png` (carte entière cliquable).
+- **Décision** : la carte entière devient un lien nommé par le projet, comme sur `/projects`. Le haut reprend `Projets.png` (nom, description sur deux lignes au plus, progression de mes tâches). Un bloc séparé « Prochaine tâche » reprend les cartes de `Single projet.png` : titre et badge de statut, priorité en badge coloré, échéance avec icône calendrier. Le nombre de tâches ouvertes et le bouton « Voir le projet » sont retirés.
+- **Justification** : la hiérarchie visuelle des maquettes remplace les listes de libellés trop chargées. La priorité colorée explique pourquoi le projet est en haut de la liste, à la demande du porteur du projet. Un seul lien par carte réduit aussi le nombre d'arrêts au clavier.
+- **Remplace** : D61 pour le contenu des cartes.
 
 ## Qualité de livraison
 

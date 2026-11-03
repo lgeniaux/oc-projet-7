@@ -106,10 +106,7 @@ for (const width of [1440, 375]) {
         fullPage: true,
       });
 
-      const link = card.getByRole("link", {
-        name: `Voir le projet « ${projectName} »`,
-        exact: true,
-      });
+      const link = card.getByRole("link", { name: projectName, exact: true });
       await link.focus();
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(`/projects/${projectId}`);
