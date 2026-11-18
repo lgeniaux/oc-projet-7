@@ -453,7 +453,6 @@ Le backend Express reste l'autorité. Le frontend reflète les droits en n'affic
 
 ---
 
-## Points restant à traiter avant de cocher toute la fiche
+## Point restant à traiter avant de cocher toute la fiche
 
-1. **WAVE** : passage manuel de l'extension sur les pages listées plus haut.
-2. **Interface IA** (#16) : hors périmètre obligatoire selon le sujet (« excepté la génération de tâches automatique ») ; prévue en bonus après validation.
+- **WAVE** : passage manuel de l'extension sur les pages listées plus haut.
