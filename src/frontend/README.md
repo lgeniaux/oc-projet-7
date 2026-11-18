@@ -73,9 +73,8 @@ Le JWT est conservé dans `sessionStorage` pour l'onglet courant, jamais dans `l
 
 TanStack Query partage les données distantes dans la branche authentifiée ; son provider et son cache sont abandonnés à la déconnexion. Les écritures actualisent les vues concernées sans rechargement manuel. Le backend reste l'autorité des permissions, même lorsqu'une action est masquée dans l'interface.
 
-Le [README racine](../../README.md#périmètre-livré-et-limites) distingue les fonctionnalités livrées, l'interface IA non livrée et les bonus absents. Voir aussi :
+Voir aussi :
 
 - [Architecture](../../docs/ARCHITECTURE.md) : modules, flux, cache et stratégie de tests.
 - [Design](../../DESIGN.md) : composants, tokens, responsive et accessibilité.
-- [Contexte métier](../../CONTEXT.md).
 - [Registre des écarts et décisions](../../docs/ecarts-et-decisions.md) : règles de progression et de tri, limites backend et adaptations des maquettes.
