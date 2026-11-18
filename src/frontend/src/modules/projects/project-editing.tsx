@@ -308,6 +308,7 @@ export function ProjectEditing({
               disabled={isSubmitting || isDeleting}
               className="min-w-0 space-y-6"
             >
+              <legend className="sr-only">Informations du projet</legend>
               <ProjectFormFields register={register} errors={errors} />
               <ContributorPicker
                 description="Les personnes ajoutées auront le rôle de contributeur."

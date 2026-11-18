@@ -160,6 +160,7 @@ export function ProjectCreation() {
             className="space-y-6"
           >
             <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
+              <legend className="sr-only">Informations du projet</legend>
               <ProjectFormFields register={register} errors={errors} />
               <ContributorPicker
                 description="Les personnes ajoutées auront le rôle de contributeur. Vous serez propriétaire du projet."

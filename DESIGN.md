@@ -178,6 +178,8 @@ La déconnexion est accessible au clavier depuis le menu du compte. Une réponse
 
 **Corrections de l'audit de livraison (#17)** : le nombre de personnes de la barre de contributeurs utilise `text`, car `muted` sur `border/30` n'atteignait que 4,39:1. Les pastilles radio et les éléments de menu déclarent un contour `solid` : `outline-none` masquait leur focus clavier. Sur les pages de connexion et d'inscription, le lien du logo a le même focus `link` de 2 px que les autres liens. Le logo garde son ratio d'origine (147 × 19) et s'affiche à 250 px de large. Le menu du compte n'est plus modal : le reste de la page n'est plus masqué aux technologies d'assistance pendant que le focus peut y aller. Radix assure toujours les flèches, Échap et le retour du focus à l'avatar.
 
+Les champs des modales de projet et de tâche sont regroupés dans un `fieldset`, qui les désactive pendant l'envoi. Ce groupe porte une `legend` masquée visuellement (« Informations du projet » ou « Informations de la tâche »). Chaque page a un titre propre, par exemple « Tableau de bord | Abricot » ou « Page introuvable | Abricot ».
+
 ## Do's and Don'ts
 
 - Préserver la hiérarchie des maquettes sans compromettre WCAG 2.1 AA ni la lecture sur petit écran.

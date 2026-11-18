@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { DashboardGreeting } from "@/modules/dashboard/dashboard-greeting";
 import { DashboardViews } from "@/modules/dashboard/dashboard-views";
 import { ProjectCreation } from "@/modules/projects/project-creation";
+
+export const metadata: Metadata = { title: "Tableau de bord | Abricot" };
 
 export default function DashboardPage() {
   return (

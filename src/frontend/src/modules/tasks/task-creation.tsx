@@ -172,6 +172,7 @@ export function TaskCreation({ projectId }: { projectId: string }) {
             className="space-y-6"
           >
             <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
+              <legend className="sr-only">Informations de la tâche</legend>
               <TaskFormFields
                 register={register}
                 control={control}
