@@ -95,4 +95,3 @@ npm run test:e2e
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) : organisation du code, flux de données et tests.
 - [`DESIGN.md`](DESIGN.md) : charte graphique, composants et accessibilité.
-- [`sujet/`](sujet/) : énoncé, spécifications et maquettes.
