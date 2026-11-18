@@ -69,7 +69,7 @@ export function TaskActions({
   const members = getAssignableMembers(project.data);
   const memberIds = new Set(members.map((member) => member.id));
   const assignedIds = task.assignees.map(({ user }) => user.id);
-  // Express keeps the assignments of a removed member (B12).
+  // Express keeps the assignments of a removed member.
   const formerAssignees = task.assignees
     .filter(({ user }) => !memberIds.has(user.id))
     .map(({ user }) => user.name || user.email);
@@ -264,6 +264,7 @@ export function TaskActions({
             className="space-y-6"
           >
             <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
+              <legend className="sr-only">Informations de la tâche</legend>
               <TaskFormFields
                 register={register}
                 control={control}

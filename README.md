@@ -95,7 +95,4 @@ npm run test:e2e
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) : organisation du code, flux de données et tests.
 - [`DESIGN.md`](DESIGN.md) : charte graphique, composants et accessibilité.
-- [`docs/ecarts-et-decisions.md`](docs/ecarts-et-decisions.md) : écarts avec les maquettes ou le backend, et choix techniques.
-- [`docs/adr/`](docs/adr/) : décisions d'architecture.
-- [`docs/autoevaluation.md`](docs/autoevaluation.md) : fiche d'autoévaluation, avec une preuve pour chaque point.
 - [`sujet/`](sujet/) : énoncé, spécifications et maquettes.

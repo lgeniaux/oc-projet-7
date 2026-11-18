@@ -21,7 +21,7 @@ Avec Express déjà démarré sur `http://localhost:8000`, lancer dans un second
 npm run dev
 ```
 
-Ouvrir **<http://localhost:8001>**, y compris depuis Windows avec WSL. Ne pas remplacer `localhost` par `127.0.0.1` ou l'adresse IP de WSL : le CORS du backend autorise l'origine `http://localhost:8001`, pas ces alternatives ([D04](../../docs/ecarts-et-decisions.md#d04--cors-limité-à-localhost-backend-4)).
+Ouvrir **<http://localhost:8001>**, y compris depuis Windows avec WSL. Ne pas remplacer `localhost` par `127.0.0.1` ou l'adresse IP de WSL : le CORS du backend autorise l'origine `http://localhost:8001`, pas ces alternatives.
 
 Sans session, l'application redirige vers la connexion. Le compte seed conseillé est `alice@example.com` / `P@ssword123` ; les autres comptes sont listés dans le README racine. Express doit rester disponible pour tous les parcours métier.
 
@@ -69,7 +69,7 @@ npm run test:e2e
 - `src/lib` : utilitaires transversaux ; `public` : ressources statiques, dont les logos.
 - `tests/unit`, `tests/component`, `tests/e2e` : tests séparés du code applicatif.
 
-Le JWT est conservé dans `sessionStorage` pour l'onglet courant, jamais dans `localStorage`. Il reste accessible au JavaScript ; le BFF avec cookie HttpOnly est en pause. La garde client masque l'application sans token mais ne protège pas le HTML serveur : Express vérifie les accès aux données. Le transport commun gère les réponses `401`, sauf le code de mot de passe actuel incorrect qui doit rester une erreur de formulaire ([ADR 0001](../../docs/adr/0001-direct-express-authentication.md), B01).
+Le JWT est conservé dans `sessionStorage` pour l'onglet courant, jamais dans `localStorage`. Il reste accessible au JavaScript, car le backend fourni renvoie le token dans sa réponse et ne gère pas de cookie HttpOnly. La garde client masque l'application sans token mais ne protège pas le HTML serveur : Express vérifie les accès aux données. Le transport commun gère les réponses `401`, sauf le code de mot de passe actuel incorrect qui doit rester une erreur de formulaire.
 
 TanStack Query partage les données distantes dans la branche authentifiée ; son provider et son cache sont abandonnés à la déconnexion. Les écritures actualisent les vues concernées sans rechargement manuel. Le backend reste l'autorité des permissions, même lorsqu'une action est masquée dans l'interface.
 
@@ -77,4 +77,3 @@ Voir aussi :
 
 - [Architecture](../../docs/ARCHITECTURE.md) : modules, flux, cache et stratégie de tests.
 - [Design](../../DESIGN.md) : composants, tokens, responsive et accessibilité.
-- [Registre des écarts et décisions](../../docs/ecarts-et-decisions.md) : règles de progression et de tri, limites backend et adaptations des maquettes.
